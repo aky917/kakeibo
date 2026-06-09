@@ -155,6 +155,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
       </div>
       <div id="splitSection">
         <div class="check-row">
+          <input type="checkbox" id="isAdjust" onchange="updateSharePreview()">
+          <label for="isAdjust">調整対象にする（割り勘費用の使用分など）</label>
+        </div>
+        <div class="check-row">
           <input type="checkbox" id="isSplit" onchange="toggleSplitOptions()">
           <label for="isSplit">割り勘対象にする</label>
         </div>
@@ -192,27 +196,18 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
       <button class="btn primary" onclick="addTransaction()">記録する</button>
     </div>
 
-    <div class="card">
-      <div class="section-title">&#x1F527; 割り勘調整</div>
-      <p style="font-size:12px;color:var(--text2);margin-bottom:.75rem">割り勘済み費用を自分だけ使った分など。負担率で按分し、<span class="partner-label">相手</span>への請求から差し引きます。</p>
-      <div class="form-row">
-        <div><label>調整額（円）</label><input type="number" id="adj-amount" placeholder="0" inputmode="numeric" oninput="updateAdjPreview()"></div>
-        <div><label>日付</label><input type="date" id="adj-date"></div>
-      </div>
-      <div class="form-row">
-        <div><label>自分の負担率（%）</label><input type="number" id="adj-myRate" placeholder="50" min="0" max="100" inputmode="numeric" oninput="updateAdjPreview()"></div>
-        <div style="display:flex;align-items:flex-end"><div id="adjPreview" style="font-size:12px;color:var(--text3);padding-bottom:10px"></div></div>
-      </div>
-      <div class="form-row full">
-        <label>メモ</label>
-        <input type="text" id="adj-memo" placeholder="例：ガソリン自分使用分">
-      </div>
-      <button class="btn adj" onclick="addAdjustment()">調整を追加</button>
-    </div>
+
   </div>
 
   <!-- 一覧 -->
   <div id="page-history" class="page">
+    <div class="subtab-row" style="margin-bottom:.75rem">
+      <div class="subtab active" id="hist-tab-all" onclick="switchHistTab('all')">全体</div>
+      <div class="subtab" id="hist-tab-me" onclick="switchHistTab('me')">自分（割り勘後）</div>
+    </div>
+    <div class="card" id="hist-summary" style="margin-bottom:.75rem;display:none">
+      <div id="hist-summary-content"></div>
+    </div>
     <div class="card">
       <div id="txList"><div class="empty">記録がありません</div></div>
     </div>
@@ -266,10 +261,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
       <div class="section-title">今月の割り勘明細</div>
       <div id="splitList"><div class="empty">割り勘の記録がありません</div></div>
     </div>
-    <div class="card" id="mySplitSummaryCard" style="display:none">
-      <div class="section-title">今月の自分の収支（割り勘込み）</div>
-      <div id="mySplitSummary"></div>
-    </div>
+
     <button class="btn no-print" style="background:#F0F4FB;color:var(--blue);border-color:var(--blue)" onclick="window.print()">&#128424;&#65039; PDF出力</button>
   </div>
 
@@ -422,7 +414,7 @@ const EXPENSE_CATS=['🍚 食費','🍣 外食','🚃 交通','🏠 住居','�
 const INCOME_CATS=['💰 給与','🎁 その他'];
 const CAT_COLORS={'🍚 食費':'#1D9E75','🍣 外食':'#2EBD8A','🚃 交通':'#378ADD','🏠 住居':'#7F77DD','💡 光熱費':'#F0B429','🚗 自動車':'#8A6A3E','🛡 保険':'#5580AA','🧴 日用品':'#6AB04C','👗 衣類':'#D4537E','🎮 娯楽':'#D85A30','💊 医療':'#E24B4A','📱 通信':'#639922','🤝 交際費':'#BA7517','🎁 その他':'#888780','💰 給与':'#BA7517'};
 
-let txType='expense', splitPayer='me', shareMode='rate';
+let txType='expense', splitPayer='me', shareMode='rate', histMode='all';
 let editTxType='expense', editSplitPayer='me', editShareMode='rate';
 let viewYear=new Date().getFullYear(), viewMonth=new Date().getMonth();
 let annualYear=new Date().getFullYear();
@@ -450,7 +442,8 @@ function monthTx(y,m){const vy=y??viewYear,vm=m??viewMonth;return transactions.f
 function realExp(txList){
   return txList.reduce((s,t)=>{
     if(t.type==='income') return s;
-    if(t.type==='adjustment') return s+(t.myShare||0);
+    if(t.type==='adjustment') return s+(t.myShare||0); // 旧データ互換
+    if(t.isAdj) return s+(t.myShare||0);
     if(t.isSplit) return s+(t.myShare||0);
     return s+t.amount;
   },0);
@@ -620,16 +613,44 @@ function getSharesFromInput(){
   return {myShare,herShare,myRate};
 }
 
+function onAdjChange(){
+  const checked=document.getElementById('isAdj').checked;
+  document.getElementById('adjRateSection').style.display=checked?'':'none';
+  if(checked){
+    document.getElementById('isSplit').checked=false;
+    document.getElementById('splitOptions').style.display='none';
+  }
+  updateAdjPreview();
+}
+function updateAdjPreview(){
+  const amt=parseFloat(document.getElementById('amount').value)||0;
+  const rateEl=document.getElementById('adj-myRate');
+  const prev=document.getElementById('adjPreview');
+  if(!rateEl||!prev) return;
+  const rate=parseInt(rateEl.value)||50;
+  if(!amt||!document.getElementById('isAdj').checked){prev.textContent='';return;}
+  const myAdd=Math.ceil(amt*rate/100);
+  const herSub=Math.floor(amt*(100-rate)/100);
+  prev.textContent=`自分+${fmt(myAdd)} / ${partnerName}-${fmt(herSub)}`;
+}
+
 function addTransaction(){
   const amount=parseFloat(document.getElementById('amount').value);
   if(!amount||amount<=0){alert('金額を入力してください');return;}
-  const isSplit=document.getElementById('isSplit').checked&&txType==='expense';
+  const isAdj=document.getElementById('isAdj').checked&&txType==='expense';
+  const isSplit=document.getElementById('isSplit').checked&&txType==='expense'&&!isAdj;
   let myShare=null,herShare=null,myRate=null;
   if(isSplit)({myShare,herShare,myRate}=getSharesFromInput());
-  transactions.push({id:Date.now(),type:txType,amount,category:document.getElementById('category').value,date:document.getElementById('txdate').value,memo:document.getElementById('memo').value||document.getElementById('category').value,note:document.getElementById('note').value,isSplit,payer:isSplit?splitPayer:null,myShare,herShare,myRate});
+  if(isAdj){
+    myRate=parseInt(document.getElementById('adj-myRate').value)||50;
+    myShare=Math.ceil(amount*myRate/100);
+    herShare=Math.floor(amount*(100-myRate)/100);
+  }
+  transactions.push({id:Date.now(),type:txType,amount,category:document.getElementById('category').value,date:document.getElementById('txdate').value,memo:document.getElementById('memo').value||document.getElementById('category').value,note:document.getElementById('note').value,isSplit,isAdj,payer:isSplit?splitPayer:null,myShare,herShare,myRate});
   save();
   document.getElementById('amount').value='';document.getElementById('memo').value='';document.getElementById('note').value='';
-  document.getElementById('isSplit').checked=false;document.getElementById('splitOptions').style.display='none';
+  document.getElementById('isSplit').checked=false;document.getElementById('isAdj').checked=false;
+  document.getElementById('splitOptions').style.display='none';document.getElementById('adjRateSection').style.display='none';
   document.getElementById('sharePreview').textContent='';setPayer('me');
   updateHeader();renderHistory();renderSplit();switchTab('history');
 }
@@ -741,7 +762,8 @@ function saveEdit(){
     }
   }
   const idx=transactions.findIndex(x=>x.id===editingId);
-  transactions[idx]={id:editingId,type:editTxType,amount,category:document.getElementById('edit-category').value,date:document.getElementById('edit-date').value,memo:document.getElementById('edit-memo').value,note:document.getElementById('edit-note').value,isSplit,payer:isSplit?editSplitPayer:null,myShare,herShare,myRate};
+  const prevIsAdj=transactions[idx]?.isAdj||false;
+  transactions[idx]={id:editingId,type:editTxType,amount,category:document.getElementById('edit-category').value,date:document.getElementById('edit-date').value,memo:document.getElementById('edit-memo').value,note:document.getElementById('edit-note').value,isSplit,isAdj:!isSplit&&prevIsAdj,payer:isSplit?editSplitPayer:null,myShare,herShare,myRate};
   save();closeModalDirect();updateHeader();renderHistory();renderSplit();
 }
 function deleteTransaction(){
@@ -791,14 +813,67 @@ function deleteAdjTransaction(){
 }
 
 /* 一覧 */
+let histTab='all';
+function switchHistTab(tab){
+  histTab=tab;
+  document.getElementById('hist-tab-all').className='subtab'+(tab==='all'?' active':'');
+  document.getElementById('hist-tab-me').className='subtab'+(tab==='me'?' active':'');
+  renderHistory();
+}
 function renderHistory(){
-  const tx=monthTx().slice().sort((a,b)=>b.date.localeCompare(a.date));
+  const allTx=monthTx().slice().sort((a,b)=>b.date.localeCompare(a.date));
   const el=document.getElementById('txList');
-  if(!tx.length){el.innerHTML='<div class="empty">この月の記録がありません</div>';return;}
-  el.innerHTML=tx.map(t=>{
+  const summaryCard=document.getElementById('hist-summary');
+  const summaryContent=document.getElementById('hist-summary-content');
+
+  if(histTab==='me'){
+    // 自分（割り勘後）：割り勘の自分負担分・非割り勘支出・調整myShare
+    summaryCard.style.display='';
+    const inc=allTx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+    const exp=realExp(allTx);
+    const bal=inc-exp;
+    summaryContent.innerHTML=`
+      <div class="detail-row"><span>収入</span><div class="dr-right"><div class="dr-main" style="color:var(--green)">${fmt(inc)}</div></div></div>
+      <div class="detail-row"><span>実質支出（割り勘後）</span><div class="dr-right"><div class="dr-main" style="color:var(--red)">${fmt(exp)}</div></div></div>
+      <div class="detail-row"><span>収支</span><div class="dr-right"><div class="dr-main" style="color:${bal>=0?'var(--blue)':'var(--red)'}">${(bal>=0?'':'-')+fmt(bal)}</div></div></div>`;
+
+    // 自分視点のリスト（割り勘は自分負担額で表示、調整は自分加算分で表示）
+    const tx=allTx.filter(t=>t.type!=='adjustment'||(t.myShare&&t.myShare>0));
+    if(!tx.length){el.innerHTML='<div class="empty">この月の記録がありません</div>';return;}
+    el.innerHTML=tx.map(t=>{
+      const isAdj=t.type==='adjustment';
+      let badge='';
+      if(t.isAdjust) badge='<span class="badge badge-adj">調整対象</span>';
+      else if(isAdj) badge='<span class="badge badge-adj">調整</span>';
+      else if(t.isSplit&&t.payer==='me') badge='<span class="badge badge-me">自分払い</span>';
+      else if(t.isSplit&&t.payer==='her') badge=`<span class="badge badge-her">${partnerName}払い</span>`;
+      const myAmt=isAdj?(t.myShare||0):t.isSplit?(t.myShare||0):t.amount;
+      const color=t.type==='income'?'var(--green)':'var(--red)';
+      const sign=t.type==='income'?'+':'-';
+      const icon=isAdj?'🔧':(t.category?t.category.slice(0,2):'💴');
+      const bg=isAdj?'#FFF8EC':((CAT_COLORS[t.category]||'#888')+'22');
+      const sub=isAdj?`${t.date} · 調整加算`:(t.isSplit?`${t.date} · ${t.category} · 自分負担`:`${t.date}${t.category?' · '+t.category:''}`);
+      return `<div class="tx-item" onclick="openEdit(${t.id})">
+        <div class="tx-icon" style="background:${bg}">${icon}</div>
+        <div class="tx-info">
+          <div class="tx-memo">${t.memo}${badge}</div>
+          <div class="tx-sub">${sub}${t.note?' · '+t.note.slice(0,20):''}</div>
+        </div>
+        <div class="tx-amount" style="color:${color}">${sign}${fmt(myAmt)}</div>
+        <div style="font-size:13px;color:var(--text3)">›</div>
+      </div>`;
+    }).join('');
+    return;
+  }
+
+  // 全体表示
+  summaryCard.style.display='none';
+  if(!allTx.length){el.innerHTML='<div class="empty">この月の記録がありません</div>';return;}
+  el.innerHTML=allTx.map(t=>{
     const isAdj=t.type==='adjustment';
     let badge='';
-    if(isAdj) badge='<span class="badge badge-adj">調整</span>';
+    if(t.isAdjust) badge='<span class="badge badge-adj">調整対象</span>';
+    else if(isAdj) badge='<span class="badge badge-adj">調整</span>';
     else if(t.isSplit&&t.payer==='me') badge='<span class="badge badge-me">自分払い</span>';
     else if(t.isSplit&&t.payer==='her') badge=`<span class="badge badge-her">${partnerName}払い</span>`;
     const color=t.type==='income'?'var(--green)':isAdj?'var(--orange)':'var(--red)';
@@ -821,13 +896,12 @@ function renderHistory(){
 function renderSplit(){
   const tx=monthTx();
   const splitTx=tx.filter(t=>t.isSplit&&t.type==='expense');
-  const adjTx=tx.filter(t=>t.type==='adjustment');
+  const adjTx=tx.filter(t=>t.type==='adjustment'||t.isAdj);
   const el=document.getElementById('splitList');
   const resEl=document.getElementById('splitResult');
   if(!splitTx.length&&!adjTx.length){
     el.innerHTML='<div class="empty">割り勘の記録がありません</div>';
     resEl.innerHTML='';
-    document.getElementById('mySplitSummaryCard').style.display='none';
     return;
   }
   let herOwesMe=0,iOweHer=0;
@@ -849,7 +923,7 @@ function renderSplit(){
 
   let rows='';
   splitTx.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(t=>{
-    const pb=t.payer==='me'?`<span class="badge badge-me">自分払い</span>`:`<span class="badge badge-her">${partnerName}払い</span>`;
+    const pb=t.payer==='me'?`<span class="badge badge-me">${myName}払い</span>`:`<span class="badge badge-her">${partnerName}払い</span>`;
     const rate=t.myRate??50;const herRate=100-rate;
     const shareLabel=t.payer==='me'?`${partnerName}負担`:'自分負担';
     const shareVal=t.payer==='me'?t.herShare:t.myShare;
@@ -881,7 +955,6 @@ function renderSplit(){
   const myExpAdj=adjMyAdd;
   const myExpTotal=myExpPersonal+myExpSplit+myExpAdj;
   const myBal=myInc-myExpTotal;
-  document.getElementById('mySplitSummaryCard').style.display='';
   document.getElementById('mySplitSummary').innerHTML=`
     <div class="detail-row"><span>収入</span><div class="dr-right"><div class="dr-main" style="color:var(--green)">${fmt(myInc)}</div></div></div>
     <div class="detail-row"><span>個人支出（割り勘外）</span><div class="dr-right"><div class="dr-main">${fmt(myExpPersonal)}</div></div></div>
