@@ -18,7 +18,7 @@
 body{font-family:-apple-system,'Hiragino Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:3rem}
 .container{max-width:430px;margin:0 auto;padding:0 1rem}
 .header{padding:1rem 1rem .5rem;display:flex;align-items:center;justify-content:space-between}
-.header h1{font-size:18px;font-weight:600}
+.header h1{font-size:17px;font-weight:600}
 .month-nav{display:flex;align-items:center;gap:8px}
 .nav-btn{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);width:28px;height:28px;cursor:pointer;color:var(--text);font-size:15px;display:flex;align-items:center;justify-content:center;font-family:inherit}
 .month-label{font-size:13px;font-weight:500;min-width:90px;text-align:center}
@@ -41,17 +41,17 @@ textarea{resize:none;height:52px;font-size:13px}
 input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .form-row.full{grid-template-columns:1fr;margin-bottom:8px}
-.btn{padding:11px;border-radius:var(--radius);font-size:14px;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text);width:100%;font-weight:500;transition:all .1s;font-family:inherit}
+.btn{padding:11px;border-radius:var(--radius);font-size:14px;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text);width:100%;font-weight:500;font-family:inherit}
 .btn:active{transform:scale(.98);opacity:.85}
 .btn.primary{background:var(--text);color:var(--bg);border-color:var(--text);margin-top:8px}
 .btn.danger{background:var(--red-bg);color:var(--red-dark);border-color:var(--red-dark)}
 .btn.export{background:var(--green-bg);color:var(--green-dark);border-color:var(--green-dark)}
 .btn.import-btn{background:#F0F4FB;color:var(--blue);border-color:var(--blue)}
-.btn.adj{background:#FFF8EC;color:var(--orange);border-color:var(--orange)}
 .toggle{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:8px}
 .toggle-btn{padding:9px;text-align:center;cursor:pointer;font-size:13px;color:var(--text2);background:var(--bg2);border:none;font-family:inherit}
 .toggle-btn.active.income{background:var(--green-bg);color:var(--green-dark);font-weight:500}
 .toggle-btn.active.expense{background:var(--red-bg);color:var(--red-dark);font-weight:500}
+.toggle-btn.active.sel{background:var(--text);color:var(--bg);font-weight:500}
 .toggle-btn.active.me{background:#EEF0FB;color:#4845A8;font-weight:500}
 .toggle-btn.active.her{background:#FBF0F5;color:#8C2E5C;font-weight:500}
 .check-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
@@ -99,32 +99,27 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
 .modal{background:var(--bg);border-radius:var(--radius) var(--radius) 0 0;width:100%;max-width:430px;padding:1.25rem 1rem 2rem;max-height:90vh;overflow-y:auto}
 .modal-title{font-size:16px;font-weight:600;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
 .modal-close{font-size:20px;cursor:pointer;color:var(--text2);background:none;border:none;font-family:inherit}
-@media print{
-  body{background:#fff}
-  .no-print{display:none!important}
-  .container{max-width:100%;padding:0}
-  .card{border:1px solid #ccc;break-inside:avoid}
-}
+@media print{body{background:#fff}.no-print{display:none!important}.container{max-width:100%;padding:0}.card{border:1px solid #ccc;break-inside:avoid}}
 </style>
 </head>
 <body>
 <div class="container">
+
+  <!-- ヘッダー -->
   <div class="header no-print">
-    <h1>&#x1F4B4; <span id="myNameHeader">家計簿</span></h1>
+    <h1 id="myNameHeader">&#x1F4B4; 家計簿</h1>
     <div class="month-nav">
       <button class="nav-btn" onclick="changeMonth(-1)">&#8249;</button>
       <span class="month-label" id="monthLabel"></span>
       <button class="nav-btn" onclick="changeMonth(1)">&#8250;</button>
     </div>
   </div>
-
   <div class="metric-grid no-print">
     <div class="metric"><div class="metric-label">収入</div><div class="metric-value" style="color:var(--green)" id="totalIncome">¥0</div></div>
     <div class="metric"><div class="metric-label">支出</div><div class="metric-value" style="color:var(--red)" id="totalExpense">¥0</div></div>
     <div class="metric"><div class="metric-label">収支</div><div class="metric-value" id="totalBalance">¥0</div><div class="metric-sub" id="balVsPrev"></div></div>
     <div class="metric"><div class="metric-label">貯蓄率</div><div class="metric-value" id="savingsRate">-</div><div class="metric-sub" id="avgExpense"></div></div>
   </div>
-
   <div class="tabs no-print">
     <div class="tab active" onclick="switchTab('home')">&#9999;&#65039; 入力</div>
     <div class="tab" onclick="switchTab('history')">&#128203; 一覧</div>
@@ -134,7 +129,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
     <div class="tab" onclick="switchTab('settings')">&#9881;&#65039; 設定</div>
   </div>
 
-  <!-- 入力 -->
+  <!-- 入力タブ -->
   <div id="page-home" class="page active">
     <div class="card">
       <div class="toggle">
@@ -151,13 +146,23 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
       </div>
       <div class="form-row full">
         <label>備考（任意）</label>
-        <textarea id="note" placeholder="例：負担率変更の理由など"></textarea>
+        <textarea id="note" placeholder="負担率変更の理由など"></textarea>
       </div>
-      <div id="splitSection">
+      <!-- 調整チェック（支出時のみ） -->
+      <div id="adjSection" style="display:none">
         <div class="check-row">
-          <input type="checkbox" id="isAdj" onchange="updateSharePreview()">
-          <label for="isAdj">調整対象にする（割り勘費用の使用分など）</label>
+          <input type="checkbox" id="isAdj" onchange="onAdjChange()">
+          <label for="isAdj">調整対象（割り勘済み費用の自己使用分など）</label>
         </div>
+        <div id="adjRateSection" style="display:none;margin-bottom:8px">
+          <div class="form-row" style="margin-bottom:4px">
+            <div><label>自分の負担率（%）</label><input type="number" id="adjRate" min="0" max="100" placeholder="50" inputmode="numeric" oninput="updateAdjPreview()"></div>
+            <div style="display:flex;align-items:flex-end"><div id="adjPreview" style="font-size:12px;color:var(--text3);padding-bottom:10px">-</div></div>
+          </div>
+        </div>
+      </div>
+      <!-- 割り勘チェック（支出時のみ） -->
+      <div id="splitSection" style="display:none">
         <div class="check-row">
           <input type="checkbox" id="isSplit" onchange="toggleSplitOptions()">
           <label for="isSplit">割り勘対象にする</label>
@@ -168,9 +173,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
             <button class="toggle-btn active me" id="btn-me" onclick="setPayer('me')">自分が払った</button>
             <button class="toggle-btn her" id="btn-her" onclick="setPayer('her')">相手が払った</button>
           </div>
-          <!-- 負担入力モード切替 -->
           <div class="toggle" style="margin-bottom:8px">
-            <button class="toggle-btn active me" id="mode-rate" onclick="setShareMode('rate')">比率で入力</button>
+            <button class="toggle-btn active sel" id="mode-rate" onclick="setShareMode('rate')">比率で入力</button>
             <button class="toggle-btn" id="mode-diff" onclick="setShareMode('diff')">差額で入力</button>
           </div>
           <div id="share-rate-input">
@@ -181,8 +185,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
           </div>
           <div id="share-diff-input" style="display:none">
             <div class="form-row" style="margin-bottom:4px">
-              <div><label id="diffWhoLabel">多く払う人</label>
-                <select id="diffWho">
+              <div><label>多く払う人</label>
+                <select id="diffWho" onchange="onDiffInput()">
                   <option value="me">自分が多く払う</option>
                   <option value="her">相手が多く払う</option>
                 </select>
@@ -195,25 +199,23 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
       </div>
       <button class="btn primary" onclick="addTransaction()">記録する</button>
     </div>
-
-
   </div>
 
-  <!-- 一覧 -->
+  <!-- 一覧タブ -->
   <div id="page-history" class="page">
-    <div class="subtab-row" style="margin-bottom:.75rem">
-      <div class="subtab active" id="hist-tab-all" onclick="switchHistTab('all')">全体</div>
-      <div class="subtab" id="hist-tab-me" onclick="switchHistTab('me')">自分（割り勘後）</div>
+    <div class="toggle" style="margin-bottom:.75rem">
+      <button class="toggle-btn active sel" id="hist-btn-all" onclick="setHistMode('all')">全体</button>
+      <button class="toggle-btn" id="hist-btn-my" onclick="setHistMode('my')">自分だけ（割り勘後）</button>
     </div>
-    <div class="card" id="hist-summary" style="margin-bottom:.75rem;display:none">
-      <div id="hist-summary-content"></div>
+    <div class="card" id="histSummaryCard" style="display:none;margin-bottom:.75rem">
+      <div id="histSummary"></div>
     </div>
     <div class="card">
       <div id="txList"><div class="empty">記録がありません</div></div>
     </div>
   </div>
 
-  <!-- グラフ -->
+  <!-- グラフタブ -->
   <div id="page-chart" class="page">
     <div class="subtab-row">
       <div class="subtab active" id="stab-me" onclick="switchSubtab('me')">&#128100; 自分</div>
@@ -227,7 +229,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
         <div style="position:relative;height:190px"><canvas id="myPieChart"></canvas></div>
       </div>
       <div class="card">
-        <div class="section-title">月別収支（自分）</div>
+        <div class="section-title">月別収支</div>
         <div class="legend-row">
           <span class="legend-item"><span class="legend-dot" style="background:#5DCAA5"></span>収入</span>
           <span class="legend-item"><span class="legend-dot" style="background:#F0997B"></span>支出</span>
@@ -235,7 +237,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
         <div style="position:relative;height:170px"><canvas id="myBarChart"></canvas></div>
       </div>
       <div class="card">
-        <div class="section-title">カテゴリ別月別推移</div>
+        <div class="section-title">カテゴリ別月別推移（上位4）</div>
         <div class="legend-row" id="trendLegend"></div>
         <div style="position:relative;height:170px"><canvas id="trendChart"></canvas></div>
       </div>
@@ -254,18 +256,17 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
     </div>
   </div>
 
-  <!-- 割り勘 -->
+  <!-- 割り勘タブ（彼女専用） -->
   <div id="page-split" class="page">
     <div id="splitResult"></div>
     <div class="card">
       <div class="section-title">今月の割り勘明細</div>
       <div id="splitList"><div class="empty">割り勘の記録がありません</div></div>
     </div>
-
     <button class="btn no-print" style="background:#F0F4FB;color:var(--blue);border-color:var(--blue)" onclick="window.print()">&#128424;&#65039; PDF出力</button>
   </div>
 
-  <!-- 年次 -->
+  <!-- 年次タブ -->
   <div id="page-annual" class="page">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
       <button class="nav-btn" onclick="changeYear(-1)">&#8249;</button>
@@ -288,12 +289,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
     </div>
   </div>
 
-  <!-- 設定 -->
+  <!-- 設定タブ -->
   <div id="page-settings" class="page">
     <div class="card">
       <div class="section-title">表示名の設定</div>
       <div class="form-row">
-        <div><label>自分の名前</label><input type="text" id="myName" placeholder="例：自分、太郎"></div>
+        <div><label>自分の名前</label><input type="text" id="myNameInput" placeholder="例：自分、太郎"></div>
         <div><label>パートナー名</label><input type="text" id="partnerNameInput" placeholder="例：彼女、嫁"></div>
       </div>
       <button class="btn primary" onclick="saveNames()">保存する</button>
@@ -325,7 +326,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
 </div>
 
 <!-- 編集モーダル（通常） -->
-<div class="modal-overlay" id="editModal" style="display:none" onclick="closeModal(event)">
+<div class="modal-overlay" id="editModal" style="display:none" onclick="if(event.target.id==='editModal')closeModalDirect()">
   <div class="modal">
     <div class="modal-title">
       <span>取引を編集</span>
@@ -343,10 +344,20 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
       <div><label>日付</label><input type="date" id="edit-date"></div>
       <div><label>メモ</label><input type="text" id="edit-memo"></div>
     </div>
-    <div class="form-row full">
-      <label>備考</label><textarea id="edit-note"></textarea>
+    <div class="form-row full"><label>備考</label><textarea id="edit-note"></textarea></div>
+    <div id="edit-adjSection" style="display:none">
+      <div class="check-row">
+        <input type="checkbox" id="edit-isAdj" onchange="editOnAdjChange()">
+        <label for="edit-isAdj">調整対象</label>
+      </div>
+      <div id="edit-adjRateSection" style="display:none;margin-bottom:8px">
+        <div class="form-row" style="margin-bottom:4px">
+          <div><label>自分の負担率（%）</label><input type="number" id="edit-adjRate" min="0" max="100" inputmode="numeric" oninput="editUpdateAdjPreview()"></div>
+          <div style="display:flex;align-items:flex-end"><div id="edit-adjPreview" style="font-size:12px;color:var(--text3);padding-bottom:10px">-</div></div>
+        </div>
+      </div>
     </div>
-    <div id="edit-splitSection">
+    <div id="edit-splitSection" style="display:none">
       <div class="check-row">
         <input type="checkbox" id="edit-isSplit" onchange="editToggleSplit()">
         <label for="edit-isSplit">割り勘対象にする</label>
@@ -358,7 +369,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
           <button class="toggle-btn her" id="edit-btn-her" onclick="editSetPayer('her')">相手が払った</button>
         </div>
         <div class="toggle" style="margin-bottom:8px">
-          <button class="toggle-btn active me" id="edit-mode-rate" onclick="editSetShareMode('rate')">比率で入力</button>
+          <button class="toggle-btn active sel" id="edit-mode-rate" onclick="editSetShareMode('rate')">比率で入力</button>
           <button class="toggle-btn" id="edit-mode-diff" onclick="editSetShareMode('diff')">差額で入力</button>
         </div>
         <div id="edit-share-rate-input">
@@ -370,7 +381,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
         <div id="edit-share-diff-input" style="display:none">
           <div class="form-row" style="margin-bottom:4px">
             <div><label>多く払う人</label>
-              <select id="edit-diffWho">
+              <select id="edit-diffWho" onchange="editOnDiffInput()">
                 <option value="me">自分が多く払う</option>
                 <option value="her">相手が多く払う</option>
               </select>
@@ -386,34 +397,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
   </div>
 </div>
 
-<!-- 編集モーダル（調整） -->
-<div class="modal-overlay" id="editAdjModal" style="display:none" onclick="closeAdjModal(event)">
-  <div class="modal">
-    <div class="modal-title">
-      <span>&#x1F527; 調整を編集</span>
-      <button class="modal-close" onclick="closeAdjModalDirect()">&#10005;</button>
-    </div>
-    <div class="form-row">
-      <div><label>調整額（円）</label><input type="number" id="eadj-amount" inputmode="numeric" oninput="updateEditAdjPreview()"></div>
-      <div><label>日付</label><input type="date" id="eadj-date"></div>
-    </div>
-    <div class="form-row">
-      <div><label>自分の負担率（%）</label><input type="number" id="eadj-myRate" min="0" max="100" inputmode="numeric" oninput="updateEditAdjPreview()"></div>
-      <div style="display:flex;align-items:flex-end"><div id="eadjPreview" style="font-size:12px;color:var(--text3);padding-bottom:10px"></div></div>
-    </div>
-    <div class="form-row full">
-      <label>メモ</label><input type="text" id="eadj-memo">
-    </div>
-    <button class="btn primary" onclick="saveAdjEdit()">保存する</button>
-    <button class="btn danger" style="margin-top:8px" onclick="deleteAdjTransaction()">この調整を削除する</button>
-  </div>
-</div>
-
 <script>
+/* ===== 定数 ===== */
 const EXPENSE_CATS=['🍚 食費','🍣 外食','🚃 交通','🏠 住居','💡 光熱費','🚗 自動車','🛡 保険','🧴 日用品','👗 衣類','🎮 娯楽','💊 医療','📱 通信','🤝 交際費','🎁 その他'];
 const INCOME_CATS=['💰 給与','🎁 その他'];
-const CAT_COLORS={'🍚 食費':'#1D9E75','🍣 外食':'#2EBD8A','🚃 交通':'#378ADD','🏠 住居':'#7F77DD','💡 光熱費':'#F0B429','🚗 自動車':'#8A6A3E','🛡 保険':'#5580AA','🧴 日用品':'#6AB04C','👗 衣類':'#D4537E','🎮 娯楽':'#D85A30','💊 医療':'#E24B4A','📱 通信':'#639922','🤝 交際費':'#BA7517','🎁 その他':'#888780','💰 給与':'#BA7517'};
+const CAT_COLORS={'🍚 食費':'#1D9E75','🍣 外食':'#2EBD8A','🚃 交通':'#378ADD','🏠 住居':'#7F77DD','💡 光熱費':'#F0B429','🚗 自動車':'#8A6A3E','🛡 保険':'#5580AA','🧴 日用品':'#6AB04C','👗 衣類':'#D4537E','🎮 娯楽':'#D85A30','💊 医療':'#E24B4A','📱 通信':'#639922','🤝 交際費':'#D4A017','🎁 その他':'#888780','💰 給与':'#BA7517'};
 
+/* ===== 状態 ===== */
 let txType='expense', splitPayer='me', shareMode='rate', histMode='all';
 let editTxType='expense', editSplitPayer='me', editShareMode='rate';
 let viewYear=new Date().getFullYear(), viewMonth=new Date().getMonth();
@@ -429,21 +419,20 @@ try{const s=localStorage.getItem('kakeibo_myname');if(s) myName=s;}catch(e){}
 try{const r=localStorage.getItem('kakeibo_catrates');if(r){const p=JSON.parse(r);EXPENSE_CATS.forEach(c=>{if(p[c]!=null) catRates[c]=p[c];});}}catch(e){}
 
 document.getElementById('txdate').value=new Date().toISOString().slice(0,10);
-document.getElementById('adj-date').value=new Date().toISOString().slice(0,10);
+document.getElementById('myNameInput').value=myName;
 document.getElementById('partnerNameInput').value=partnerName;
-document.getElementById('myName').value=myName;
 
+/* ===== ユーティリティ ===== */
 function save(){try{localStorage.setItem('kakeibo_v7',JSON.stringify(transactions));}catch(e){}}
 function fmt(n){return '\u00a5'+Math.abs(Math.round(n)).toLocaleString();}
 function fmtS(n){const a=Math.abs(n);return (n<0?'-':'')+(a>=10000?'\u00a5'+(a/10000).toFixed(1)+'\u4e07':'\u00a5'+a.toLocaleString());}
 function monthTx(y,m){const vy=y??viewYear,vm=m??viewMonth;return transactions.filter(t=>{const d=new Date(t.date);return d.getFullYear()===vy&&d.getMonth()===vm;});}
 
-// 実質支出（割り勘の自分負担 + 非割り勘 + 調整のmyShare）
+// 実質支出（割り勘自分負担 + 非割り勘 + 調整myShare）
 function realExp(txList){
   return txList.reduce((s,t)=>{
     if(t.type==='income') return s;
-    if(t.type==='adjustment') return s+(t.myShare||0); // 旧データ互換
-    if(t.isAdj) return s+(t.myShare||0);
+    if(t.isAdj||t.type==='adjustment') return s+(t.myShare||0);
     if(t.isSplit) return s+(t.myShare||0);
     return s+t.amount;
   },0);
@@ -452,27 +441,20 @@ function realExp(txList){
 /* 端数：彼女への請求→切り捨て、自分が払う→切り上げ */
 function calcShares(amount, myRatePct, payer){
   const r=Math.max(0,Math.min(100,myRatePct??50))/100;
-  if(payer==='me'){
-    const herShare=Math.floor(amount*(1-r));
-    return {myShare:amount-herShare,herShare};
-  } else {
-    const myShare=Math.ceil(amount*r);
-    return {myShare,herShare:amount-myShare};
-  }
+  if(payer==='me'){const herShare=Math.floor(amount*(1-r));return {myShare:amount-herShare,herShare};}
+  else{const myShare=Math.ceil(amount*r);return {myShare,herShare:amount-myShare};}
 }
 function calcSharesByDiff(amount, diffAmt, diffWho, payer){
-  // diffWho が多く払う方
   const half=amount/2;
-  let myShare, herShare;
+  let myShare,herShare;
   if(diffWho==='me'){myShare=Math.round(half+diffAmt/2);herShare=amount-myShare;}
   else{herShare=Math.round(half+diffAmt/2);myShare=amount-herShare;}
-  // 端数：彼女請求→切り捨て、自分払い→切り上げ
   if(payer==='me'){herShare=Math.floor(herShare);myShare=amount-herShare;}
   else{myShare=Math.ceil(myShare);herShare=amount-myShare;}
-  const myRate=Math.round(myShare/amount*100);
-  return {myShare,herShare,myRate};
+  return {myShare,herShare,myRate:Math.round(myShare/amount*100)};
 }
 
+/* ===== カテゴリ選択肢 ===== */
 function buildCatOptions(sel,type,val){
   const cats=type==='income'?INCOME_CATS:EXPENSE_CATS;
   sel.innerHTML=cats.map(c=>`<option value="${c}">${c}</option>`).join('');
@@ -481,43 +463,45 @@ function buildCatOptions(sel,type,val){
 buildCatOptions(document.getElementById('category'),'expense');
 buildCatOptions(document.getElementById('edit-category'),'expense');
 
+/* ===== カテゴリ負担率テーブル ===== */
 function buildCatRateTable(){
-  document.getElementById('catRateTable').innerHTML=EXPENSE_CATS.map(c=>`
-    <div class="cat-rate-row">
+  document.getElementById('catRateTable').innerHTML=EXPENSE_CATS.map(c=>{
+    const id='cr_'+c.replace(/[^\w]/g,'_');
+    const pid='crp_'+c.replace(/[^\w]/g,'_');
+    return `<div class="cat-rate-row">
       <span class="cat-name">${c}</span>
-      <input type="number" class="cat-rate-input" id="cr-${CSS.escape(c)}" min="0" max="100" value="${catRates[c]??50}" oninput="updateCRP('${c}')">
+      <input type="number" class="cat-rate-input" id="${id}" min="0" max="100" value="${catRates[c]??50}" oninput="document.getElementById('${pid}').textContent='相手'+(100-(parseInt(this.value)||0))+'%'">
       <span style="font-size:12px;color:var(--text2)">%</span>
-      <span style="font-size:11px;color:var(--text3);min-width:52px;text-align:right" id="crp-${CSS.escape(c)}">相手${100-(catRates[c]??50)}%</span>
-    </div>`).join('');
-}
-function updateCRP(c){
-  const el=document.getElementById('cr-'+CSS.escape(c));
-  if(!el) return;
-  const v=parseInt(el.value)||0;
-  const p=document.getElementById('crp-'+CSS.escape(c));
-  if(p) p.textContent='相手'+(100-v)+'%';
+      <span style="font-size:11px;color:var(--text3);min-width:52px;text-align:right" id="${pid}">相手${100-(catRates[c]??50)}%</span>
+    </div>`;
+  }).join('');
 }
 function saveCatRates(){
-  EXPENSE_CATS.forEach(c=>{const el=document.getElementById('cr-'+CSS.escape(c));if(el) catRates[c]=parseInt(el.value)||50;});
+  EXPENSE_CATS.forEach(c=>{
+    const id='cr_'+c.replace(/[^\w]/g,'_');
+    const el=document.getElementById(id);
+    if(el) catRates[c]=parseInt(el.value)||50;
+  });
   localStorage.setItem('kakeibo_catrates',JSON.stringify(catRates));
   alert('保存しました');
 }
 
+/* ===== 名前設定 ===== */
 function saveNames(){
-  myName=document.getElementById('myName').value||'自分';
+  myName=document.getElementById('myNameInput').value||'自分';
   partnerName=document.getElementById('partnerNameInput').value||'彼女';
   localStorage.setItem('kakeibo_myname',myName);
   localStorage.setItem('kakeibo_partner',partnerName);
   updateLabels();alert('保存しました');
 }
 function updateLabels(){
-  document.getElementById('myNameHeader').textContent=myName+'の家計簿';
+  document.getElementById('myNameHeader').textContent='\u{1F4B4} '+myName+'の家計簿';
   document.getElementById('btn-her').textContent=partnerName+'が払った';
   document.getElementById('edit-btn-her').textContent=partnerName+'が払った';
   document.getElementById('herRateLabel').textContent=partnerName+'の負担率';
-  document.querySelectorAll('.partner-label').forEach(el=>el.textContent=partnerName);
 }
 
+/* ===== ヘッダー ===== */
 function updateHeader(){
   document.getElementById('monthLabel').textContent=viewYear+'年'+(viewMonth+1)+'月';
   const tx=monthTx();
@@ -526,8 +510,8 @@ function updateHeader(){
   document.getElementById('totalIncome').textContent=fmt(inc);
   document.getElementById('totalExpense').textContent=fmt(exp);
   const bal=inc-exp;
-  const el=document.getElementById('totalBalance');
-  el.textContent=(bal>=0?'':'-')+fmt(bal);el.style.color=bal>=0?'var(--blue)':'var(--red)';
+  const balEl=document.getElementById('totalBalance');
+  balEl.textContent=(bal>=0?'':'-')+fmt(bal);balEl.style.color=bal>=0?'var(--blue)':'var(--red)';
   const sr=inc>0?Math.round(bal/inc*100):null;
   document.getElementById('savingsRate').textContent=sr!=null?sr+'%':'-';
   document.getElementById('savingsRate').style.color=sr>=20?'var(--green)':sr>=0?'var(--blue)':'var(--red)';
@@ -545,11 +529,12 @@ function changeMonth(d){
   renderCharts(sub);
 }
 
-/* 入力 */
+/* ===== 入力フォーム ===== */
 function setType(t){
   txType=t;
   document.getElementById('btn-income').className='toggle-btn'+(t==='income'?' active income':'');
   document.getElementById('btn-expense').className='toggle-btn'+(t==='expense'?' active expense':'');
+  document.getElementById('adjSection').style.display=t==='expense'?'':'none';
   document.getElementById('splitSection').style.display=t==='expense'?'':'none';
   buildCatOptions(document.getElementById('category'),t);
   if(t==='expense') applyDefaultRate();
@@ -562,13 +547,24 @@ function setPayer(p){
 }
 function setShareMode(m){
   shareMode=m;
-  document.getElementById('mode-rate').className='toggle-btn'+(m==='rate'?' active me':'');
-  document.getElementById('mode-diff').className='toggle-btn'+(m==='diff'?' active me':'');
+  document.getElementById('mode-rate').className='toggle-btn'+(m==='rate'?' active sel':'');
+  document.getElementById('mode-diff').className='toggle-btn'+(m==='diff'?' active sel':'');
   document.getElementById('share-rate-input').style.display=m==='rate'?'':'none';
   document.getElementById('share-diff-input').style.display=m==='diff'?'':'none';
   updateSharePreview();
 }
-function toggleSplitOptions(){document.getElementById('splitOptions').style.display=document.getElementById('isSplit').checked?'':'none';updateSharePreview();}
+function toggleSplitOptions(){
+  const checked=document.getElementById('isSplit').checked;
+  document.getElementById('splitOptions').style.display=checked?'':'none';
+  if(checked){document.getElementById('isAdj').checked=false;document.getElementById('adjRateSection').style.display='none';}
+  updateSharePreview();
+}
+function onAdjChange(){
+  const checked=document.getElementById('isAdj').checked;
+  document.getElementById('adjRateSection').style.display=checked?'':'none';
+  if(checked){document.getElementById('isSplit').checked=false;document.getElementById('splitOptions').style.display='none';}
+  updateAdjPreview();
+}
 function applyDefaultRate(){
   const cat=document.getElementById('category').value;
   const rate=catRates[cat]??50;
@@ -577,124 +573,200 @@ function applyDefaultRate(){
   updateSharePreview();
 }
 function onCategoryChange(){if(txType==='expense') applyDefaultRate();}
-function onAmountInput(){updateSharePreview();}
+function onAmountInput(){updateSharePreview();updateAdjPreview();}
 function onRateInput(){
   const v=parseInt(document.getElementById('myRate').value)||0;
   document.getElementById('herRateDisp').textContent=(100-v)+'%';
   updateSharePreview();
 }
 function onDiffInput(){updateSharePreview();}
-function updateSharePreview(){
-  const amt=parseFloat(document.getElementById('amount').value)||0;
-  if(!amt||!document.getElementById('isSplit').checked){document.getElementById('sharePreview').textContent='';return;}
-  let myShare,herShare;
-  if(shareMode==='rate'){
-    const rate=parseInt(document.getElementById('myRate').value)||50;
-    ({myShare,herShare}=calcShares(amt,rate,splitPayer));
-  } else {
-    const dw=document.getElementById('diffWho').value;
-    const da=parseFloat(document.getElementById('diffAmt').value)||0;
-    ({myShare,herShare}=calcSharesByDiff(amt,da,dw,splitPayer));
-  }
-  document.getElementById('sharePreview').textContent=`自分 ${fmt(myShare)} / ${partnerName} ${fmt(herShare)}`;
-}
-
-function getSharesFromInput(){
-  const amount=parseFloat(document.getElementById('amount').value);
-  let myShare,herShare,myRate;
-  if(shareMode==='rate'){
-    myRate=parseInt(document.getElementById('myRate').value)||50;
-    ({myShare,herShare}=calcShares(amount,myRate,splitPayer));
-  } else {
-    const dw=document.getElementById('diffWho').value;
-    const da=parseFloat(document.getElementById('diffAmt').value)||0;
-    ({myShare,herShare,myRate}=calcSharesByDiff(amount,da,dw,splitPayer));
-  }
-  return {myShare,herShare,myRate};
-}
-
-function onAdjChange(){
-  const checked=document.getElementById('isAdj').checked;
-  document.getElementById('adjRateSection').style.display=checked?'':'none';
-  if(checked){
-    document.getElementById('isSplit').checked=false;
-    document.getElementById('splitOptions').style.display='none';
-  }
-  updateAdjPreview();
-}
 function updateAdjPreview(){
   const amt=parseFloat(document.getElementById('amount').value)||0;
-  const rateEl=document.getElementById('adj-myRate');
+  const rate=parseInt(document.getElementById('adjRate').value)||50;
   const prev=document.getElementById('adjPreview');
-  if(!rateEl||!prev) return;
-  const rate=parseInt(rateEl.value)||50;
-  if(!amt||!document.getElementById('isAdj').checked){prev.textContent='';return;}
-  const myAdd=Math.ceil(amt*rate/100);
-  const herSub=Math.floor(amt*(100-rate)/100);
-  prev.textContent=`自分+${fmt(myAdd)} / ${partnerName}-${fmt(herSub)}`;
+  if(!document.getElementById('isAdj').checked||!amt){prev.textContent='-';return;}
+  prev.textContent=`自分+${fmt(Math.ceil(amt*rate/100))} / ${partnerName}-${fmt(Math.floor(amt*(100-rate)/100))}`;
+}
+function updateSharePreview(){
+  const amt=parseFloat(document.getElementById('amount').value)||0;
+  const el=document.getElementById('sharePreview');
+  if(!amt||!document.getElementById('isSplit').checked){el.textContent='';return;}
+  let myShare,herShare;
+  if(shareMode==='rate'){const rate=parseInt(document.getElementById('myRate').value)||50;({myShare,herShare}=calcShares(amt,rate,splitPayer));}
+  else{const dw=document.getElementById('diffWho').value;const da=parseFloat(document.getElementById('diffAmt').value)||0;({myShare,herShare}=calcSharesByDiff(amt,da,dw,splitPayer));}
+  el.textContent=`自分 ${fmt(myShare)} / ${partnerName} ${fmt(herShare)}`;
 }
 
 function addTransaction(){
   const amount=parseFloat(document.getElementById('amount').value);
   if(!amount||amount<=0){alert('金額を入力してください');return;}
   const isAdj=document.getElementById('isAdj').checked&&txType==='expense';
-  const isSplit=document.getElementById('isSplit').checked&&txType==='expense'&&!isAdj;
+  const isSplit=!isAdj&&document.getElementById('isSplit').checked&&txType==='expense';
   let myShare=null,herShare=null,myRate=null;
-  if(isSplit)({myShare,herShare,myRate}=getSharesFromInput());
+  if(isSplit){
+    if(shareMode==='rate'){myRate=parseInt(document.getElementById('myRate').value)||50;({myShare,herShare}=calcShares(amount,myRate,splitPayer));}
+    else{const dw=document.getElementById('diffWho').value;const da=parseFloat(document.getElementById('diffAmt').value)||0;({myShare,herShare,myRate}=calcSharesByDiff(amount,da,dw,splitPayer));}
+  }
   if(isAdj){
-    myRate=parseInt(document.getElementById('adj-myRate').value)||50;
+    myRate=parseInt(document.getElementById('adjRate').value)||50;
     myShare=Math.ceil(amount*myRate/100);
     herShare=Math.floor(amount*(100-myRate)/100);
   }
-  transactions.push({id:Date.now(),type:txType,amount,category:document.getElementById('category').value,date:document.getElementById('txdate').value,memo:document.getElementById('memo').value||document.getElementById('category').value,note:document.getElementById('note').value,isSplit,isAdj,payer:isSplit?splitPayer:null,myShare,herShare,myRate});
+  transactions.push({
+    id:Date.now(),type:txType,amount,
+    category:document.getElementById('category').value,
+    date:document.getElementById('txdate').value,
+    memo:document.getElementById('memo').value||document.getElementById('category').value,
+    note:document.getElementById('note').value,
+    isSplit,isAdj,payer:isSplit?splitPayer:null,myShare,herShare,myRate
+  });
   save();
-  document.getElementById('amount').value='';document.getElementById('memo').value='';document.getElementById('note').value='';
-  document.getElementById('isSplit').checked=false;document.getElementById('isAdj').checked=false;
-  document.getElementById('splitOptions').style.display='none';document.getElementById('adjRateSection').style.display='none';
-  document.getElementById('sharePreview').textContent='';setPayer('me');
+  document.getElementById('amount').value='';
+  document.getElementById('memo').value='';
+  document.getElementById('note').value='';
+  document.getElementById('isSplit').checked=false;
+  document.getElementById('isAdj').checked=false;
+  document.getElementById('splitOptions').style.display='none';
+  document.getElementById('adjRateSection').style.display='none';
+  document.getElementById('sharePreview').textContent='';
+  setPayer('me');
   updateHeader();renderHistory();renderSplit();switchTab('history');
 }
 
-function updateAdjPreview(){
-  const amt=parseFloat(document.getElementById('adj-amount').value)||0;
-  const rate=parseInt(document.getElementById('adj-myRate').value)||50;
-  if(!amt){document.getElementById('adjPreview').textContent='';return;}
-  const myAdd=Math.ceil(amt*rate/100);
-  const herSub=Math.floor(amt*(100-rate)/100);
-  document.getElementById('adjPreview').textContent=`自分+${fmt(myAdd)} / ${partnerName}-${fmt(herSub)}`;
-}
-function addAdjustment(){
-  const amount=parseFloat(document.getElementById('adj-amount').value);
-  if(!amount||amount<=0){alert('金額を入力してください');return;}
-  const myRate=parseInt(document.getElementById('adj-myRate').value)||50;
-  const myShare=Math.ceil(amount*myRate/100);
-  const herShare=Math.floor(amount*(100-myRate)/100);
-  transactions.push({id:Date.now(),type:'adjustment',amount,date:document.getElementById('adj-date').value,memo:document.getElementById('adj-memo').value||'割り勘調整',note:'',category:'調整',isSplit:false,payer:null,myShare,herShare,myRate});
-  save();
-  document.getElementById('adj-amount').value='';document.getElementById('adj-memo').value='';
-  document.getElementById('adj-myRate').value='';document.getElementById('adjPreview').textContent='';
-  updateHeader();renderHistory();renderSplit();
-  alert('調整を追加しました');
+/* ===== 一覧 ===== */
+function setHistMode(m){
+  histMode=m;
+  document.getElementById('hist-btn-all').className='toggle-btn'+(m==='all'?' active sel':'');
+  document.getElementById('hist-btn-my').className='toggle-btn'+(m==='my'?' active sel':'');
+  document.getElementById('histSummaryCard').style.display=m==='my'?'':'none';
+  renderHistory();
 }
 
-/* 編集モーダル（通常） */
+function renderHistory(){
+  const tx=monthTx().slice().sort((a,b)=>b.date.localeCompare(a.date));
+  const el=document.getElementById('txList');
+
+  if(histMode==='my'){
+    const inc=tx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+    const exp=realExp(tx);const bal=inc-exp;
+    document.getElementById('histSummary').innerHTML=`
+      <div class="detail-row"><span>収入</span><div class="dr-right"><div class="dr-main" style="color:var(--green)">${fmt(inc)}</div></div></div>
+      <div class="detail-row"><span>実質支出</span><div class="dr-right"><div class="dr-main" style="color:var(--red)">${fmt(exp)}</div></div></div>
+      <div class="detail-row"><span>収支</span><div class="dr-right"><div class="dr-main" style="color:${bal>=0?'var(--blue)':'var(--red)'}">${(bal>=0?'':'-')+fmt(bal)}</div></div></div>`;
+    if(!tx.length){el.innerHTML='<div class="empty">この月の記録がありません</div>';return;}
+    el.innerHTML=tx.map(t=>{
+      let dispAmt,color,sign,note2='';
+      if(t.type==='income'){dispAmt=t.amount;color='var(--green)';sign='+';}
+      else if(t.isAdj||t.type==='adjustment'){dispAmt=t.myShare||0;color='var(--orange)';sign='+';note2=' (調整加算)';}
+      else if(t.isSplit){dispAmt=t.myShare||0;color='var(--red)';sign='-';note2=` (全体${fmt(t.amount)}の自分分)`;}
+      else{dispAmt=t.amount;color='var(--red)';sign='-';}
+      const icon=(t.isAdj||t.type==='adjustment')?'🔧':(t.category?t.category.slice(0,2):'💴');
+      const bg=(t.isAdj||t.type==='adjustment')?'#FFF8EC':((CAT_COLORS[t.category]||'#888')+'22');
+      return `<div class="tx-item" onclick="openEdit(${t.id})">
+        <div class="tx-icon" style="background:${bg}">${icon}</div>
+        <div class="tx-info"><div class="tx-memo">${t.memo}</div><div class="tx-sub">${t.date}${t.category?' · '+t.category:''}${note2}</div></div>
+        <div class="tx-amount" style="color:${color}">${sign}${fmt(dispAmt)}</div>
+        <div style="font-size:13px;color:var(--text3)">›</div>
+      </div>`;
+    }).join('');
+    return;
+  }
+
+  if(!tx.length){el.innerHTML='<div class="empty">この月の記録がありません</div>';return;}
+  el.innerHTML=tx.map(t=>{
+    const isAdj=t.isAdj||t.type==='adjustment';
+    let badge='';
+    if(isAdj) badge='<span class="badge badge-adj">調整</span>';
+    else if(t.isSplit&&t.payer==='me') badge=`<span class="badge badge-me">${myName}払い</span>`;
+    else if(t.isSplit&&t.payer==='her') badge=`<span class="badge badge-her">${partnerName}払い</span>`;
+    const color=t.type==='income'?'var(--green)':isAdj?'var(--orange)':'var(--red)';
+    const sign=t.type==='income'?'+':isAdj?'▲':'-';
+    const icon=isAdj?'🔧':(t.category?t.category.slice(0,2):'💴');
+    const bg=isAdj?'#FFF8EC':((CAT_COLORS[t.category]||'#888')+'22');
+    return `<div class="tx-item" onclick="openEdit(${t.id})">
+      <div class="tx-icon" style="background:${bg}">${icon}</div>
+      <div class="tx-info"><div class="tx-memo">${t.memo}${badge}</div><div class="tx-sub">${t.date}${t.category?' · '+t.category:''}${t.note?' · '+t.note.slice(0,20):''}</div></div>
+      <div class="tx-amount" style="color:${color}">${sign}${fmt(t.amount)}</div>
+      <div style="font-size:13px;color:var(--text3)">›</div>
+    </div>`;
+  }).join('');
+}
+
+/* ===== 割り勘 ===== */
+function renderSplit(){
+  const tx=monthTx();
+  const splitTx=tx.filter(t=>t.isSplit&&t.type==='expense');
+  const adjTx=tx.filter(t=>t.isAdj||t.type==='adjustment');
+  const el=document.getElementById('splitList');
+  const resEl=document.getElementById('splitResult');
+  if(!splitTx.length&&!adjTx.length){
+    el.innerHTML='<div class="empty">割り勘の記録がありません</div>';resEl.innerHTML='';return;
+  }
+  let herOwesMe=0,iOweHer=0;
+  splitTx.forEach(t=>{if(t.payer==='me') herOwesMe+=t.herShare||0;else iOweHer+=t.myShare||0;});
+  const adjHerSub=adjTx.reduce((s,t)=>s+(t.herShare||0),0);
+  const net=(herOwesMe-adjHerSub)-iOweHer;
+  let rh='';
+  if(net>0) rh=`<div class="result-box receive"><div style="font-size:13px;color:var(--green-dark);margin-bottom:4px">${partnerName}から受け取る</div><div style="font-size:28px;font-weight:700;color:var(--green-dark)">${fmt(net)}</div></div>`;
+  else if(net<0) rh=`<div class="result-box pay"><div style="font-size:13px;color:var(--red-dark);margin-bottom:4px">${myName}が払う</div><div style="font-size:28px;font-weight:700;color:var(--red-dark)">${fmt(-net)}</div></div>`;
+  else rh=`<div class="result-box even"><div style="font-size:13px;color:var(--text2);margin-bottom:4px">精算なし</div><div style="font-size:28px;font-weight:700">¥0</div></div>`;
+  rh+=`<div class="card" style="margin-bottom:.75rem">
+    <div class="detail-row"><span>${myName}立て替え → ${partnerName}負担</span><div class="dr-right"><div class="dr-main">${fmt(herOwesMe)}</div></div></div>
+    ${adjHerSub>0?`<div class="detail-row"><span>調整差し引き</span><div class="dr-right"><div class="dr-main" style="color:var(--orange)">▲${fmt(adjHerSub)}</div></div></div>`:''}
+    <div class="detail-row"><span>${partnerName}立て替え → ${myName}負担</span><div class="dr-right"><div class="dr-main">${fmt(iOweHer)}</div></div></div>
+  </div>`;
+  resEl.innerHTML=rh;
+  let rows='';
+  splitTx.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(t=>{
+    const pb=t.payer==='me'?`<span class="badge badge-me">${myName}払い</span>`:`<span class="badge badge-her">${partnerName}払い</span>`;
+    const rate=t.myRate??50;const herRate=100-rate;
+    const shareLabel=t.payer==='me'?`${partnerName}負担`:`${myName}負担`;
+    const shareVal=t.payer==='me'?t.herShare:t.myShare;
+    rows+=`<div class="detail-row">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;color:var(--text)">${t.memo}${pb}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${t.date} · 元${fmt(t.amount)} · ${myName}${rate}%:${partnerName}${herRate}%${t.note?' · '+t.note:''}</div>
+      </div>
+      <div class="dr-right"><div class="dr-main">${shareLabel}: ${fmt(shareVal||0)}</div></div>
+    </div>`;
+  });
+  adjTx.forEach(t=>{
+    const rate=t.myRate??50;
+    rows+=`<div class="detail-row">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;color:var(--orange)">🔧 ${t.memo}<span class="badge badge-adj">調整</span></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${t.date} · 元${fmt(t.amount)} · ${myName}${rate}%:${partnerName}${100-rate}%</div>
+      </div>
+      <div class="dr-right"><div class="dr-main" style="color:var(--orange)">${partnerName}▲${fmt(t.herShare||0)}</div></div>
+    </div>`;
+  });
+  el.innerHTML=rows||'<div class="empty">データなし</div>';
+}
+
+/* ===== 編集モーダル ===== */
 function openEdit(id){
   const t=transactions.find(x=>x.id===id);if(!t) return;
-  if(t.type==='adjustment'){openAdjEdit(id);return;}
-  editingId=id;editTxType=t.type;editSplitPayer=t.payer||'me';editShareMode='rate';
-  document.getElementById('edit-btn-income').className='toggle-btn'+(t.type==='income'?' active income':'');
-  document.getElementById('edit-btn-expense').className='toggle-btn'+(t.type==='expense'?' active expense':'');
-  buildCatOptions(document.getElementById('edit-category'),t.type,t.category);
+  editingId=id;editTxType=t.type==='adjustment'?'expense':t.type;editSplitPayer=t.payer||'me';editShareMode='rate';
+  document.getElementById('edit-btn-income').className='toggle-btn'+(editTxType==='income'?' active income':'');
+  document.getElementById('edit-btn-expense').className='toggle-btn'+(editTxType==='expense'?' active expense':'');
+  buildCatOptions(document.getElementById('edit-category'),editTxType,t.category);
   document.getElementById('edit-amount').value=t.amount;
   document.getElementById('edit-date').value=t.date;
   document.getElementById('edit-memo').value=t.memo;
   document.getElementById('edit-note').value=t.note||'';
-  document.getElementById('edit-isSplit').checked=!!t.isSplit;
-  document.getElementById('edit-splitOptions').style.display=t.isSplit?'':'none';
-  document.getElementById('edit-splitSection').style.display=t.type==='expense'?'':'none';
+  const isExpense=editTxType==='expense';
+  document.getElementById('edit-adjSection').style.display=isExpense?'':'none';
+  document.getElementById('edit-splitSection').style.display=isExpense?'':'none';
+  const isAdj=t.isAdj||t.type==='adjustment';
+  document.getElementById('edit-isAdj').checked=isAdj;
+  document.getElementById('edit-adjRateSection').style.display=isAdj?'':'none';
+  if(isAdj) document.getElementById('edit-adjRate').value=t.myRate??50;
+  editUpdateAdjPreview();
+  document.getElementById('edit-isSplit').checked=!!t.isSplit&&!isAdj;
+  document.getElementById('edit-splitOptions').style.display=(t.isSplit&&!isAdj)?'':'none';
   document.getElementById('edit-btn-me').className='toggle-btn'+(editSplitPayer==='me'?' active me':'');
   document.getElementById('edit-btn-her').className='toggle-btn'+(editSplitPayer==='her'?' active her':'');
-  document.getElementById('edit-mode-rate').className='toggle-btn active me';
+  document.getElementById('edit-mode-rate').className='toggle-btn active sel';
   document.getElementById('edit-mode-diff').className='toggle-btn';
   document.getElementById('edit-share-rate-input').style.display='';
   document.getElementById('edit-share-diff-input').style.display='none';
@@ -704,12 +776,12 @@ function openEdit(id){
   editOnRateInput();
   document.getElementById('editModal').style.display='flex';
 }
-function closeModal(e){if(e.target.id==='editModal') closeModalDirect();}
 function closeModalDirect(){document.getElementById('editModal').style.display='none';editingId=null;}
 function editSetType(t){
   editTxType=t;
   document.getElementById('edit-btn-income').className='toggle-btn'+(t==='income'?' active income':'');
   document.getElementById('edit-btn-expense').className='toggle-btn'+(t==='expense'?' active expense':'');
+  document.getElementById('edit-adjSection').style.display=t==='expense'?'':'none';
   document.getElementById('edit-splitSection').style.display=t==='expense'?'':'none';
   buildCatOptions(document.getElementById('edit-category'),t);
 }
@@ -721,13 +793,30 @@ function editSetPayer(p){
 }
 function editSetShareMode(m){
   editShareMode=m;
-  document.getElementById('edit-mode-rate').className='toggle-btn'+(m==='rate'?' active me':'');
-  document.getElementById('edit-mode-diff').className='toggle-btn'+(m==='diff'?' active me':'');
+  document.getElementById('edit-mode-rate').className='toggle-btn'+(m==='rate'?' active sel':'');
+  document.getElementById('edit-mode-diff').className='toggle-btn'+(m==='diff'?' active sel':'');
   document.getElementById('edit-share-rate-input').style.display=m==='rate'?'':'none';
   document.getElementById('edit-share-diff-input').style.display=m==='diff'?'':'none';
 }
-function editToggleSplit(){document.getElementById('edit-splitOptions').style.display=document.getElementById('edit-isSplit').checked?'':'none';}
-function editOnAmountInput(){editOnRateInput();}
+function editToggleSplit(){
+  const checked=document.getElementById('edit-isSplit').checked;
+  document.getElementById('edit-splitOptions').style.display=checked?'':'none';
+  if(checked){document.getElementById('edit-isAdj').checked=false;document.getElementById('edit-adjRateSection').style.display='none';}
+}
+function editOnAdjChange(){
+  const checked=document.getElementById('edit-isAdj').checked;
+  document.getElementById('edit-adjRateSection').style.display=checked?'':'none';
+  if(checked){document.getElementById('edit-isSplit').checked=false;document.getElementById('edit-splitOptions').style.display='none';}
+  editUpdateAdjPreview();
+}
+function editUpdateAdjPreview(){
+  const amt=parseFloat(document.getElementById('edit-amount').value)||0;
+  const rate=parseInt(document.getElementById('edit-adjRate').value)||50;
+  const prev=document.getElementById('edit-adjPreview');
+  if(!document.getElementById('edit-isAdj').checked||!amt){prev.textContent='-';return;}
+  prev.textContent=`自分+${fmt(Math.ceil(amt*rate/100))} / ${partnerName}-${fmt(Math.floor(amt*(100-rate)/100))}`;
+}
+function editOnAmountInput(){editOnRateInput();editUpdateAdjPreview();}
 function editOnRateInput(){
   const v=parseInt(document.getElementById('edit-myRate').value)||0;
   document.getElementById('edit-herRateDisp').textContent=(100-v)+'%';
@@ -749,21 +838,16 @@ function saveEdit(){
   if(!editingId) return;
   const amount=parseFloat(document.getElementById('edit-amount').value);
   if(!amount||amount<=0){alert('金額を入力してください');return;}
-  const isSplit=document.getElementById('edit-isSplit').checked&&editTxType==='expense';
+  const isAdj=document.getElementById('edit-isAdj').checked&&editTxType==='expense';
+  const isSplit=!isAdj&&document.getElementById('edit-isSplit').checked&&editTxType==='expense';
   let myShare=null,herShare=null,myRate=null;
   if(isSplit){
-    if(editShareMode==='rate'){
-      myRate=parseInt(document.getElementById('edit-myRate').value)||50;
-      ({myShare,herShare}=calcShares(amount,myRate,editSplitPayer));
-    } else {
-      const dw=document.getElementById('edit-diffWho').value;
-      const da=parseFloat(document.getElementById('edit-diffAmt').value)||0;
-      ({myShare,herShare,myRate}=calcSharesByDiff(amount,da,dw,editSplitPayer));
-    }
+    if(editShareMode==='rate'){myRate=parseInt(document.getElementById('edit-myRate').value)||50;({myShare,herShare}=calcShares(amount,myRate,editSplitPayer));}
+    else{const dw=document.getElementById('edit-diffWho').value;const da=parseFloat(document.getElementById('edit-diffAmt').value)||0;({myShare,herShare,myRate}=calcSharesByDiff(amount,da,dw,editSplitPayer));}
   }
+  if(isAdj){myRate=parseInt(document.getElementById('edit-adjRate').value)||50;myShare=Math.ceil(amount*myRate/100);herShare=Math.floor(amount*(100-myRate)/100);}
   const idx=transactions.findIndex(x=>x.id===editingId);
-  const prevIsAdj=transactions[idx]?.isAdj||false;
-  transactions[idx]={id:editingId,type:editTxType,amount,category:document.getElementById('edit-category').value,date:document.getElementById('edit-date').value,memo:document.getElementById('edit-memo').value,note:document.getElementById('edit-note').value,isSplit,isAdj:!isSplit&&prevIsAdj,payer:isSplit?editSplitPayer:null,myShare,herShare,myRate};
+  transactions[idx]={id:editingId,type:editTxType,amount,category:document.getElementById('edit-category').value,date:document.getElementById('edit-date').value,memo:document.getElementById('edit-memo').value||document.getElementById('edit-category').value,note:document.getElementById('edit-note').value,isSplit,isAdj,payer:isSplit?editSplitPayer:null,myShare,herShare,myRate};
   save();closeModalDirect();updateHeader();renderHistory();renderSplit();
 }
 function deleteTransaction(){
@@ -773,208 +857,15 @@ function deleteTransaction(){
   save();closeModalDirect();updateHeader();renderHistory();renderSplit();
 }
 
-/* 編集モーダル（調整） */
-function openAdjEdit(id){
-  const t=transactions.find(x=>x.id===id);if(!t) return;
-  editingId=id;
-  document.getElementById('eadj-amount').value=t.amount;
-  document.getElementById('eadj-date').value=t.date;
-  document.getElementById('eadj-memo').value=t.memo;
-  document.getElementById('eadj-myRate').value=t.myRate??50;
-  updateEditAdjPreview();
-  document.getElementById('editAdjModal').style.display='flex';
-}
-function closeAdjModal(e){if(e.target.id==='editAdjModal') closeAdjModalDirect();}
-function closeAdjModalDirect(){document.getElementById('editAdjModal').style.display='none';editingId=null;}
-function updateEditAdjPreview(){
-  const amt=parseFloat(document.getElementById('eadj-amount').value)||0;
-  const rate=parseInt(document.getElementById('eadj-myRate').value)||50;
-  if(!amt){document.getElementById('eadjPreview').textContent='';return;}
-  const myAdd=Math.ceil(amt*rate/100);
-  const herSub=Math.floor(amt*(100-rate)/100);
-  document.getElementById('eadjPreview').textContent=`自分+${fmt(myAdd)} / ${partnerName}-${fmt(herSub)}`;
-}
-function saveAdjEdit(){
-  if(!editingId) return;
-  const amount=parseFloat(document.getElementById('eadj-amount').value);
-  if(!amount||amount<=0){alert('金額を入力してください');return;}
-  const myRate=parseInt(document.getElementById('eadj-myRate').value)||50;
-  const myShare=Math.ceil(amount*myRate/100);
-  const herShare=Math.floor(amount*(100-myRate)/100);
-  const idx=transactions.findIndex(x=>x.id===editingId);
-  transactions[idx]={...transactions[idx],amount,date:document.getElementById('eadj-date').value,memo:document.getElementById('eadj-memo').value||'割り勘調整',myShare,herShare,myRate};
-  save();closeAdjModalDirect();updateHeader();renderHistory();renderSplit();
-}
-function deleteAdjTransaction(){
-  if(!editingId) return;
-  if(!confirm('この調整を削除しますか？')) return;
-  transactions=transactions.filter(x=>x.id!==editingId);
-  save();closeAdjModalDirect();updateHeader();renderHistory();renderSplit();
-}
-
-/* 一覧 */
-let histTab='all';
-function switchHistTab(tab){
-  histTab=tab;
-  document.getElementById('hist-tab-all').className='subtab'+(tab==='all'?' active':'');
-  document.getElementById('hist-tab-me').className='subtab'+(tab==='me'?' active':'');
-  renderHistory();
-}
-function renderHistory(){
-  const allTx=monthTx().slice().sort((a,b)=>b.date.localeCompare(a.date));
-  const el=document.getElementById('txList');
-  const summaryCard=document.getElementById('hist-summary');
-  const summaryContent=document.getElementById('hist-summary-content');
-
-  if(histTab==='me'){
-    // 自分（割り勘後）：割り勘の自分負担分・非割り勘支出・調整myShare
-    summaryCard.style.display='';
-    const inc=allTx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-    const exp=realExp(allTx);
-    const bal=inc-exp;
-    summaryContent.innerHTML=`
-      <div class="detail-row"><span>収入</span><div class="dr-right"><div class="dr-main" style="color:var(--green)">${fmt(inc)}</div></div></div>
-      <div class="detail-row"><span>実質支出（割り勘後）</span><div class="dr-right"><div class="dr-main" style="color:var(--red)">${fmt(exp)}</div></div></div>
-      <div class="detail-row"><span>収支</span><div class="dr-right"><div class="dr-main" style="color:${bal>=0?'var(--blue)':'var(--red)'}">${(bal>=0?'':'-')+fmt(bal)}</div></div></div>`;
-
-    // 自分視点のリスト（割り勘は自分負担額で表示、調整は自分加算分で表示）
-    const tx=allTx.filter(t=>t.type!=='adjustment'||(t.myShare&&t.myShare>0));
-    if(!tx.length){el.innerHTML='<div class="empty">この月の記録がありません</div>';return;}
-    el.innerHTML=tx.map(t=>{
-      const isAdj=t.type==='adjustment';
-      let badge='';
-      if(t.isAdj) badge='<span class="badge badge-adj">調整対象</span>';
-      else if(isAdj) badge='<span class="badge badge-adj">調整</span>';
-      else if(t.isSplit&&t.payer==='me') badge='<span class="badge badge-me">自分払い</span>';
-      else if(t.isSplit&&t.payer==='her') badge=`<span class="badge badge-her">${partnerName}払い</span>`;
-      const myAmt=isAdj?(t.myShare||0):t.isSplit?(t.myShare||0):t.amount;
-      const color=t.type==='income'?'var(--green)':'var(--red)';
-      const sign=t.type==='income'?'+':'-';
-      const icon=isAdj?'🔧':(t.category?t.category.slice(0,2):'💴');
-      const bg=isAdj?'#FFF8EC':((CAT_COLORS[t.category]||'#888')+'22');
-      const sub=isAdj?`${t.date} · 調整加算`:(t.isSplit?`${t.date} · ${t.category} · 自分負担`:`${t.date}${t.category?' · '+t.category:''}`);
-      return `<div class="tx-item" onclick="openEdit(${t.id})">
-        <div class="tx-icon" style="background:${bg}">${icon}</div>
-        <div class="tx-info">
-          <div class="tx-memo">${t.memo}${badge}</div>
-          <div class="tx-sub">${sub}${t.note?' · '+t.note.slice(0,20):''}</div>
-        </div>
-        <div class="tx-amount" style="color:${color}">${sign}${fmt(myAmt)}</div>
-        <div style="font-size:13px;color:var(--text3)">›</div>
-      </div>`;
-    }).join('');
-    return;
-  }
-
-  // 全体表示
-  summaryCard.style.display='none';
-  if(!allTx.length){el.innerHTML='<div class="empty">この月の記録がありません</div>';return;}
-  el.innerHTML=allTx.map(t=>{
-    const isAdj=t.type==='adjustment';
-    let badge='';
-    if(t.isAdj) badge='<span class="badge badge-adj">調整対象</span>';
-    else if(isAdj) badge='<span class="badge badge-adj">調整</span>';
-    else if(t.isSplit&&t.payer==='me') badge='<span class="badge badge-me">自分払い</span>';
-    else if(t.isSplit&&t.payer==='her') badge=`<span class="badge badge-her">${partnerName}払い</span>`;
-    const color=t.type==='income'?'var(--green)':isAdj?'var(--orange)':'var(--red)';
-    const sign=t.type==='income'?'+':isAdj?'▲':'-';
-    const icon=isAdj?'🔧':(t.category?t.category.slice(0,2):'💴');
-    const bg=isAdj?'#FFF8EC':((CAT_COLORS[t.category]||'#888')+'22');
-    return `<div class="tx-item" onclick="openEdit(${t.id})">
-      <div class="tx-icon" style="background:${bg}">${icon}</div>
-      <div class="tx-info">
-        <div class="tx-memo">${t.memo}${badge}</div>
-        <div class="tx-sub">${t.date}${t.category?' · '+t.category:''}${t.note?' · '+t.note.slice(0,20):''}</div>
-      </div>
-      <div class="tx-amount" style="color:${color}">${sign}${fmt(t.amount)}</div>
-      <div style="font-size:13px;color:var(--text3)">›</div>
-    </div>`;
-  }).join('');
-}
-
-/* 割り勘 */
-function renderSplit(){
-  const tx=monthTx();
-  const splitTx=tx.filter(t=>t.isSplit&&t.type==='expense');
-  const adjTx=tx.filter(t=>t.type==='adjustment'||t.isAdj);
-  const el=document.getElementById('splitList');
-  const resEl=document.getElementById('splitResult');
-  if(!splitTx.length&&!adjTx.length){
-    el.innerHTML='<div class="empty">割り勘の記録がありません</div>';
-    resEl.innerHTML='';
-    return;
-  }
-  let herOwesMe=0,iOweHer=0;
-  splitTx.forEach(t=>{if(t.payer==='me') herOwesMe+=t.herShare;else iOweHer+=t.myShare;});
-  const adjHerSub=adjTx.reduce((s,t)=>s+(t.herShare||0),0);
-  const adjMyAdd=adjTx.reduce((s,t)=>s+(t.myShare||0),0);
-  const net=(herOwesMe-adjHerSub)-iOweHer;
-
-  let rh='';
-  if(net>0) rh=`<div class="result-box receive"><div style="font-size:13px;color:var(--green-dark);margin-bottom:4px">${partnerName}から受け取る</div><div style="font-size:28px;font-weight:700;color:var(--green-dark)">${fmt(net)}</div></div>`;
-  else if(net<0) rh=`<div class="result-box pay"><div style="font-size:13px;color:var(--red-dark);margin-bottom:4px">自分が払う</div><div style="font-size:28px;font-weight:700;color:var(--red-dark)">${fmt(-net)}</div></div>`;
-  else rh=`<div class="result-box even"><div style="font-size:13px;color:var(--text2);margin-bottom:4px">精算なし</div><div style="font-size:28px;font-weight:700">¥0</div></div>`;
-  rh+=`<div class="card" style="margin-bottom:.75rem">
-    <div class="detail-row"><span>自分立て替え → ${partnerName}負担</span><div class="dr-right"><div class="dr-main">${fmt(herOwesMe)}</div></div></div>
-    ${adjHerSub>0?`<div class="detail-row"><span>調整差し引き</span><div class="dr-right"><div class="dr-main" style="color:var(--orange)">▲${fmt(adjHerSub)}</div></div></div>`:''}
-    <div class="detail-row"><span>${partnerName}立て替え → 自分負担</span><div class="dr-right"><div class="dr-main">${fmt(iOweHer)}</div></div></div>
-  </div>`;
-  resEl.innerHTML=rh;
-
-  let rows='';
-  splitTx.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(t=>{
-    const pb=t.payer==='me'?`<span class="badge badge-me">${myName}払い</span>`:`<span class="badge badge-her">${partnerName}払い</span>`;
-    const rate=t.myRate??50;const herRate=100-rate;
-    const shareLabel=t.payer==='me'?`${partnerName}負担`:'自分負担';
-    const shareVal=t.payer==='me'?t.herShare:t.myShare;
-    const rateNote=rate!==50?`自${rate}%:相${herRate}%`:'50:50';
-    rows+=`<div class="detail-row">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;color:var(--text)">${t.memo}${pb}</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px">${t.date} · 元${fmt(t.amount)} · ${rateNote}${t.note?' · '+t.note:''}</div>
-      </div>
-      <div class="dr-right"><div class="dr-main">${shareLabel}: ${fmt(shareVal)}</div></div>
-    </div>`;
-  });
-  adjTx.forEach(t=>{
-    const rate=t.myRate??50;
-    rows+=`<div class="detail-row">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;color:var(--orange)">🔧 ${t.memo}<span class="badge badge-adj">調整</span></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px">${t.date} · 元${fmt(t.amount)} · 自${rate}%:相${100-rate}%</div>
-      </div>
-      <div class="dr-right"><div class="dr-main" style="color:var(--orange)">${partnerName}▲${fmt(t.herShare||0)}</div></div>
-    </div>`;
-  });
-  el.innerHTML=rows;
-
-  // 自分の収支明細（割り勘込み）
-  const myInc=tx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-  const myExpPersonal=tx.filter(t=>t.type==='expense'&&!t.isSplit).reduce((s,t)=>s+t.amount,0);
-  const myExpSplit=splitTx.reduce((s,t)=>s+t.myShare,0);
-  const myExpAdj=adjMyAdd;
-  const myExpTotal=myExpPersonal+myExpSplit+myExpAdj;
-  const myBal=myInc-myExpTotal;
-  document.getElementById('mySplitSummary').innerHTML=`
-    <div class="detail-row"><span>収入</span><div class="dr-right"><div class="dr-main" style="color:var(--green)">${fmt(myInc)}</div></div></div>
-    <div class="detail-row"><span>個人支出（割り勘外）</span><div class="dr-right"><div class="dr-main">${fmt(myExpPersonal)}</div></div></div>
-    <div class="detail-row"><span>割り勘 自分負担分</span><div class="dr-right"><div class="dr-main">${fmt(myExpSplit)}</div></div></div>
-    ${myExpAdj>0?`<div class="detail-row"><span>調整 自分加算分</span><div class="dr-right"><div class="dr-main">${fmt(myExpAdj)}</div></div></div>`:''}
-    <div class="detail-row" style="font-weight:500"><span>支出合計</span><div class="dr-right"><div class="dr-main" style="color:var(--red)">${fmt(myExpTotal)}</div></div></div>
-    <div class="detail-row" style="font-weight:500"><span>収支</span><div class="dr-right"><div class="dr-main" style="color:${myBal>=0?'var(--blue)':'var(--red)'}">${(myBal>=0?'':'-')+fmt(myBal)}</div></div></div>`;
-}
-
-/* グラフ */
+/* ===== グラフ ===== */
 let charts={};
 function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
-function getMonthRange(n){
-  const arr=[];for(let i=n-1;i>=0;i--){let m=viewMonth-i,y=viewYear;while(m<0){m+=12;y--;}arr.push({m,y,label:(m+1)+'月'});}return arr;
-}
+function getMonthRange(n){const arr=[];for(let i=n-1;i>=0;i--){let m=viewMonth-i,y=viewYear;while(m<0){m+=12;y--;}arr.push({m,y,label:(m+1)+'月'});}return arr;}
+
 function renderMyCharts(){
   const tx=monthTx();
   const inc=tx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-  const exp=realExp(tx);
-  const sr=inc>0?Math.round((inc-exp)/inc*100):null;
+  const exp=realExp(tx);const sr=inc>0?Math.round((inc-exp)/inc*100):null;
   document.getElementById('myMetrics').innerHTML=`
     <div class="metric"><div class="metric-label">収入</div><div class="metric-value" style="color:var(--green)">${fmt(inc)}</div></div>
     <div class="metric"><div class="metric-label">実質支出</div><div class="metric-value" style="color:var(--red)">${fmt(exp)}</div></div>
@@ -983,12 +874,11 @@ function renderMyCharts(){
   const catMap={};
   tx.forEach(t=>{
     if(t.type==='income') return;
-    if(t.type==='adjustment'){catMap['🔧 調整']=(catMap['🔧 調整']||0)+(t.myShare||0);return;}
-    const amt=t.isSplit?t.myShare:t.amount;
-    catMap[t.category]=(catMap[t.category]||0)+amt;
+    const amt=(t.isAdj||t.type==='adjustment')?(t.myShare||0):t.isSplit?(t.myShare||0):t.amount;
+    const key=(t.isAdj||t.type==='adjustment')?'🔧 調整':(t.category||'🎁 その他');
+    catMap[key]=(catMap[key]||0)+amt;
   });
-  const cats=Object.keys(catMap),vals=cats.map(c=>catMap[c]);
-  const colors=cats.map(c=>CAT_COLORS[c]||'#AAA89F');
+  const cats=Object.keys(catMap),vals=cats.map(c=>catMap[c]),colors=cats.map(c=>CAT_COLORS[c]||'#AAA89F');
   const total=vals.reduce((a,b)=>a+b,1);
   document.getElementById('myPieLegend').innerHTML=cats.length?cats.map((c,i)=>`<span class="legend-item"><span class="legend-dot" style="background:${colors[i]}"></span>${c.slice(2)||c} ${Math.round(vals[i]/total*100)}%</span>`).join(''):'<span style="font-size:12px;color:var(--text3)">データなし</span>';
   destroyChart('myPie');
@@ -1003,18 +893,18 @@ function renderMyCharts(){
   document.getElementById('trendLegend').innerHTML=topCats.map((c,i)=>`<span class="legend-item"><span class="legend-dot" style="background:${trendColors[i]}"></span>${c.slice(2)||c}</span>`).join('');
   destroyChart('trend');
   if(topCats.length){
-    charts['trend']=new Chart(document.getElementById('trendChart'),{type:'line',data:{labels:months.map(x=>x.label),datasets:topCats.map((c,i)=>({label:c,data:months.map(({m,y})=>{const mtx=transactions.filter(t=>{const d=new Date(t.date);return d.getFullYear()===y&&d.getMonth()===m;});return mtx.reduce((s,t)=>{if(t.type==='adjustment'&&c==='🔧 調整') return s+(t.myShare||0);if(t.type==='expense'&&t.category===c) return s+(t.isSplit?t.myShare:t.amount);return s;},0);}),borderColor:trendColors[i],backgroundColor:'transparent',tension:.3,pointRadius:2}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{callback:v=>v===0?'0':'¥'+Math.round(v/1000)+'k'}}}}});
+    charts['trend']=new Chart(document.getElementById('trendChart'),{type:'line',data:{labels:months.map(x=>x.label),datasets:topCats.map((c,i)=>({label:c,data:months.map(({m,y})=>{const mtx=transactions.filter(t=>{const d=new Date(t.date);return d.getFullYear()===y&&d.getMonth()===m;});return mtx.reduce((s,t)=>{if((t.isAdj||t.type==='adjustment')&&c==='🔧 調整') return s+(t.myShare||0);if(t.type==='expense'&&!t.isAdj&&t.category===c) return s+(t.isSplit?t.myShare||0:t.amount);return s;},0);}),borderColor:trendColors[i],backgroundColor:'transparent',tension:.3,pointRadius:2}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{callback:v=>v===0?'0':'¥'+Math.round(v/1000)+'k'}}}}});
   }
 }
 function renderCoupleCharts(){
   const splitTx=monthTx().filter(t=>t.isSplit&&t.type==='expense');
   const grand=splitTx.reduce((s,t)=>s+t.amount,0);
-  const myT=splitTx.reduce((s,t)=>s+t.myShare,0);
-  const herT=splitTx.reduce((s,t)=>s+t.herShare,0);
+  const myT=splitTx.reduce((s,t)=>s+(t.myShare||0),0);
+  const herT=splitTx.reduce((s,t)=>s+(t.herShare||0),0);
   document.getElementById('coupleMetrics').innerHTML=`
     <div class="metric"><div class="metric-label">二人の支出合計</div><div class="metric-value" style="color:var(--red)">${fmt(grand)}</div></div>
     <div class="metric"><div class="metric-label">折半額</div><div class="metric-value">${fmt(grand/2||0)}</div></div>
-    <div class="metric"><div class="metric-label">自分の実負担</div><div class="metric-value" style="color:var(--purple)">${fmt(myT)}</div></div>
+    <div class="metric"><div class="metric-label">${myName}の実負担</div><div class="metric-value" style="color:var(--purple)">${fmt(myT)}</div></div>
     <div class="metric"><div class="metric-label">${partnerName}の実負担</div><div class="metric-value" style="color:var(--pink)">${fmt(herT)}</div></div>`;
   const catMap={};for(const t of splitTx) catMap[t.category]=(catMap[t.category]||0)+t.amount;
   const cats=Object.keys(catMap),vals=cats.map(c=>catMap[c]),colors=cats.map(c=>CAT_COLORS[c]||'#888');
@@ -1024,7 +914,7 @@ function renderCoupleCharts(){
   if(cats.length) charts['couplePie']=new Chart(document.getElementById('couplePieChart'),{type:'doughnut',data:{labels:cats,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
   const months=getMonthRange(6);
   const totals=[];
-  months.forEach(({m,y})=>{const mtx=transactions.filter(t=>{const d=new Date(t.date);return t.isSplit&&t.type==='expense'&&d.getFullYear()===y&&d.getMonth()===m;});totals.push(mtx.reduce((s,t)=>s+t.amount,0));});
+  months.forEach(({m,y})=>{const mtx=transactions.filter(t=>{const d=new Date(t.date);return t.isSplit&&t.type==='expense'&&new Date(t.date).getFullYear()===y&&new Date(t.date).getMonth()===m;});totals.push(mtx.reduce((s,t)=>s+t.amount,0));});
   destroyChart('coupleBar');
   charts['coupleBar']=new Chart(document.getElementById('coupleBarChart'),{type:'bar',data:{labels:months.map(x=>x.label),datasets:[{label:'支出合計',data:totals,backgroundColor:'var(--red)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{callback:v=>v===0?'0':'¥'+Math.round(v/1000)+'k'}}}}});
 }
@@ -1037,17 +927,15 @@ function switchSubtab(sub){
   renderCharts(sub);
 }
 
-/* 年次 */
+/* ===== 年次 ===== */
 function changeYear(d){annualYear+=d;renderAnnual();}
 function renderAnnual(){
   document.getElementById('yearLabel').textContent=annualYear+'年';
-  let cumul=0,totalInc=0,totalExp=0;
-  const rows=[];
+  let cumul=0,totalInc=0,totalExp=0;const rows=[];
   for(let m=0;m<12;m++){
     const tx=monthTx(annualYear,m);
     const inc=tx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-    const exp=realExp(tx);
-    const bal=inc-exp;cumul+=bal;totalInc+=inc;totalExp+=exp;
+    const exp=realExp(tx);const bal=inc-exp;cumul+=bal;totalInc+=inc;totalExp+=exp;
     rows.push({m:m+1,inc,exp,bal,cumul,hasData:tx.length>0});
   }
   const totalBal=totalInc-totalExp;
@@ -1066,11 +954,11 @@ function renderAnnual(){
   ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{callback:v=>v===0?'0':'¥'+Math.round(v/1000)+'k'}}}}});
 }
 
-/* CSV */
+/* ===== CSV ===== */
 function exportCSV(){
   if(!transactions.length){alert('データがありません');return;}
-  const headers=['id','type','amount','category','date','memo','note','isSplit','payer','myShare','herShare','myRate'];
-  const rows=transactions.map(t=>headers.map(k=>{const v=t[k];if(v==null) return '';const s=String(v);return (s.includes(',')||s.includes('"')||s.includes('\n'))?'"'+s.replace(/"/g,'""')+'"':s;}).join(','));
+  const headers=['id','type','amount','category','date','memo','note','isSplit','isAdj','payer','myShare','herShare','myRate'];
+  const rows=transactions.map(t=>headers.map(k=>{const v=t[k];if(v==null) return '';const s=String(v);return(s.includes(',')||s.includes('"')||s.includes('\n'))?'"'+s.replace(/"/g,'""')+'"':s;}).join(','));
   const csv='\uFEFF'+headers.join(',')+'\n'+rows.join('\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob);
@@ -1086,11 +974,11 @@ function importCSV(e){
     const existing=new Set(transactions.map(t=>String(t.id)));
     let added=0,skipped=0;
     for(let i=1;i<lines.length;i++){
-      const cols=parseCSVLine(lines[i]);if(cols.length<headers.length) continue;
+      const cols=parseCSVLine(lines[i]);if(cols.length<2) continue;
       const obj={};
       headers.forEach((h,i)=>{const v=cols[i];if(v===''||v==null){obj[h]=null;return;}
         if(['amount','myShare','herShare','myRate'].includes(h)) obj[h]=parseFloat(v)||null;
-        else if(h==='isSplit') obj[h]=v==='true';
+        else if(['isSplit','isAdj'].includes(h)) obj[h]=v==='true';
         else if(h==='id') obj[h]=parseInt(v);
         else obj[h]=v;});
       if(existing.has(String(obj.id))){skipped++;continue;}
@@ -1106,28 +994,24 @@ function parseCSVLine(line){
   for(let i=0;i<line.length;i++){
     if(line[i]==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
     else if(line[i]===','&&!inQ){r.push(cur);cur='';}else cur+=line[i];
-  }
-  r.push(cur);return r;
+  }r.push(cur);return r;
 }
 function buildExcelData(txList){
-  const h=['日付','種別','カテゴリ','メモ','備考','金額','割り勘','支払者','自分負担率%','自分負担',partnerName+'負担'];
-  const rows=txList.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(t=>[
-    t.date,t.type==='income'?'収入':t.type==='adjustment'?'調整':'支出',
-    (t.category||'').replace(/[\u{1F300}-\u{1FFFF}]/gu,'').trim(),t.memo,t.note||'',t.amount,
-    t.isSplit?'○':'',t.isSplit?(t.payer==='me'?myName:partnerName):'',
+  const h=['日付','種別','カテゴリ','メモ','備考','金額','割り勘','調整','支払者','自分負担率%','自分負担',partnerName+'負担'];
+  return [h,...txList.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(t=>[
+    t.date,t.type==='income'?'収入':'支出',(t.category||'').replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27BF]/gu,'').trim(),
+    t.memo,t.note||'',t.amount,t.isSplit?'○':'',t.isAdj?'○':'',
+    t.isSplit?(t.payer==='me'?myName:partnerName):'',
     t.myRate??'',t.myShare!=null?Math.round(t.myShare):'',t.herShare!=null?Math.round(t.herShare):''
-  ]);
-  return [h,...rows];
+  ])];
 }
 function exportExcel(){
   if(!transactions.length){alert('データがありません');return;}
   const wb=XLSX.utils.book_new();
   const ws=XLSX.utils.aoa_to_sheet(buildExcelData(transactions));
-  ws['!cols']=[{wch:12},{wch:6},{wch:10},{wch:16},{wch:20},{wch:10},{wch:6},{wch:8},{wch:8},{wch:10},{wch:10}];
   XLSX.utils.book_append_sheet(wb,ws,'全データ');
-  const months={};
-  transactions.forEach(t=>{const k=t.date.slice(0,7);if(!months[k]) months[k]={income:0,expense:0};if(t.type==='income') months[k].income+=t.amount;else if(t.type==='expense') months[k].expense+=t.amount;});
-  const ws2=XLSX.utils.aoa_to_sheet([['年月','収入','支出','収支'],...Object.entries(months).sort().map(([k,v])=>[k,v.income,v.expense,v.income-v.expense])]);
+  const months={};transactions.forEach(t=>{const k=t.date.slice(0,7);if(!months[k]) months[k]={income:0,expense:0};if(t.type==='income') months[k].income+=t.amount;else months[k].expense+=realExp([t]);});
+  const ws2=XLSX.utils.aoa_to_sheet([['年月','収入','実質支出','収支'],...Object.entries(months).sort().map(([k,v])=>[k,v.income,v.expense,v.income-v.expense])]);
   XLSX.utils.book_append_sheet(wb,ws2,'月別サマリー');
   XLSX.writeFile(wb,'家計簿_全期間.xlsx');
 }
@@ -1143,6 +1027,7 @@ function resetAll(){
   transactions=[];save();updateHeader();renderHistory();renderSplit();alert('削除しました');
 }
 
+/* ===== タブ切り替え ===== */
 function switchTab(name){
   const names=['home','history','chart','split','annual','settings'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));
@@ -1153,7 +1038,7 @@ function switchTab(name){
   if(name==='settings') buildCatRateTable();
 }
 
-/* 初期化 */
+/* ===== 初期化 ===== */
 setType('expense');
 buildCatRateTable();
 updateLabels();
