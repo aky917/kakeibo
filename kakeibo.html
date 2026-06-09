@@ -155,8 +155,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
       </div>
       <div id="splitSection">
         <div class="check-row">
-          <input type="checkbox" id="isAdjust" onchange="updateSharePreview()">
-          <label for="isAdjust">調整対象にする（割り勘費用の使用分など）</label>
+          <input type="checkbox" id="isAdj" onchange="updateSharePreview()">
+          <label for="isAdj">調整対象にする（割り勘費用の使用分など）</label>
         </div>
         <div class="check-row">
           <input type="checkbox" id="isSplit" onchange="toggleSplitOptions()">
@@ -843,7 +843,7 @@ function renderHistory(){
     el.innerHTML=tx.map(t=>{
       const isAdj=t.type==='adjustment';
       let badge='';
-      if(t.isAdjust) badge='<span class="badge badge-adj">調整対象</span>';
+      if(t.isAdj) badge='<span class="badge badge-adj">調整対象</span>';
       else if(isAdj) badge='<span class="badge badge-adj">調整</span>';
       else if(t.isSplit&&t.payer==='me') badge='<span class="badge badge-me">自分払い</span>';
       else if(t.isSplit&&t.payer==='her') badge=`<span class="badge badge-her">${partnerName}払い</span>`;
@@ -872,7 +872,7 @@ function renderHistory(){
   el.innerHTML=allTx.map(t=>{
     const isAdj=t.type==='adjustment';
     let badge='';
-    if(t.isAdjust) badge='<span class="badge badge-adj">調整対象</span>';
+    if(t.isAdj) badge='<span class="badge badge-adj">調整対象</span>';
     else if(isAdj) badge='<span class="badge badge-adj">調整</span>';
     else if(t.isSplit&&t.payer==='me') badge='<span class="badge badge-me">自分払い</span>';
     else if(t.isSplit&&t.payer==='her') badge=`<span class="badge badge-her">${partnerName}払い</span>`;
