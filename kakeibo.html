@@ -128,6 +128,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
     <div class="tab" onclick="switchTab('history')">&#128203; 一覧</div>
     <div class="tab" onclick="switchTab('chart')">&#128202; グラフ</div>
     <div class="tab" onclick="switchTab('split')">&#128106; 割り勘</div>
+    <div class="tab" onclick="switchTab('budget')">&#127919; 予算</div>
     <div class="tab" onclick="switchTab('annual')">&#128197; 年次</div>
     <div class="tab" onclick="switchTab('settings')">&#9881;&#65039; 設定</div>
   </div>
@@ -271,6 +272,28 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
       <div id="splitList"><div class="empty">割り勘の記録がありません</div></div>
     </div>
     <button class="btn no-print" style="background:#F0F4FB;color:var(--blue);border-color:var(--blue)" onclick="window.print()">&#128424;&#65039; PDF出力</button>
+  </div>
+
+  <!-- 予算タブ -->
+  <div id="page-budget" class="page">
+    <div class="metric-grid" id="budgetSummary" style="padding:0 0 .75rem"></div>
+    <div class="card" style="margin-bottom:.75rem">
+      <div class="section-title">カテゴリ別</div>
+      <div id="budgetList"><div class="empty">予算を設定してください</div></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+        <div class="section-title" style="margin:0" id="budgetFormTitle">予算を設定する</div>
+        <button class="btn" id="budgetCopyBtn" onclick="copyPrevBudget()" style="font-size:12px;padding:4px 10px">前月からコピー</button>
+      </div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:.75rem">0のカテゴリは予算未設定として扱われます</p>
+      <div id="budgetInputTable"></div>
+      <div style="margin-top:.75rem">
+        <label style="font-size:13px;color:var(--text2);display:block;margin-bottom:4px">備考</label>
+        <textarea id="budgetNote" placeholder="今月の予算に関するメモ" style="width:100%;box-sizing:border-box;resize:vertical;min-height:60px"></textarea>
+      </div>
+      <button class="btn primary" onclick="saveBudgets()">保存する</button>
+    </div>
   </div>
 
   <!-- 年次タブ -->
@@ -660,7 +683,7 @@ function setHistMode(m){
 }
 
 function renderHistory(){
-  const tx=monthTx().slice().sort((a,b)=>b.date.localeCompare(a.date));
+  const tx=monthTx().slice().sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
   const el=document.getElementById('txList');
 
   if(histMode==='my'){
@@ -1044,15 +1067,101 @@ function resetAll(){
   transactions=[];save();updateHeader();renderHistory();renderSplit();alert('削除しました');
 }
 
+/* ===== 予算 ===== */
+function budgetKey(y,m){return 'kakeibo_budget_'+y+'-'+String(m+1).padStart(2,'0');}
+function loadBudget(y,m){try{const b=localStorage.getItem(budgetKey(y,m));return b?JSON.parse(b):{cats:{},note:''};}catch(e){return{cats:{},note:''};}}
+function buildBudgetInputTable(){
+  const data=loadBudget(viewYear,viewMonth);
+  document.getElementById('budgetFormTitle').textContent=viewYear+'年'+(viewMonth+1)+'月の予算を設定する';
+  document.getElementById('budgetInputTable').innerHTML=EXPENSE_CATS.map(c=>{
+    const id='bgt_'+c.replace(/[^\w]/g,'_');
+    return `<div class="cat-rate-row">
+      <span class="cat-name">${c}</span>
+      <input type="number" class="cat-rate-input" id="${id}" min="0" step="1000" placeholder="0" inputmode="numeric" value="${data.cats[c]||''}" style="width:90px;text-align:right">
+      <span style="font-size:12px;color:var(--text2)">円</span>
+    </div>`;
+  }).join('');
+  document.getElementById('budgetNote').value=data.note||'';
+  // 前月コピーボタン：前月データがあれば有効
+  const prev=loadBudget(viewMonth===0?viewYear-1:viewYear,viewMonth===0?11:viewMonth-1);
+  document.getElementById('budgetCopyBtn').style.opacity=Object.keys(prev.cats).length?'1':'0.4';
+}
+function saveBudgets(){
+  const cats={};
+  EXPENSE_CATS.forEach(c=>{
+    const id='bgt_'+c.replace(/[^\w]/g,'_');
+    const el=document.getElementById(id);
+    const v=parseInt(el&&el.value)||0;
+    if(v>0) cats[c]=v;
+  });
+  const note=document.getElementById('budgetNote').value.trim();
+  localStorage.setItem(budgetKey(viewYear,viewMonth),JSON.stringify({cats,note}));
+  renderBudget();
+  alert('保存しました');
+}
+function copyPrevBudget(){
+  const py=viewMonth===0?viewYear-1:viewYear;
+  const pm=viewMonth===0?11:viewMonth-1;
+  const prev=loadBudget(py,pm);
+  if(!Object.keys(prev.cats).length){alert('前月の予算データがありません');return;}
+  EXPENSE_CATS.forEach(c=>{
+    const id='bgt_'+c.replace(/[^\w]/g,'_');
+    const el=document.getElementById(id);
+    if(el) el.value=prev.cats[c]||'';
+  });
+  // 備考はコピーしない（月固有のメモなので）
+}
+function renderBudget(){
+  const data=loadBudget(viewYear,viewMonth);
+  const budgetCats=EXPENSE_CATS.filter(c=>data.cats[c]>0);
+  const tx=monthTx();
+  const catExp={};
+  tx.forEach(t=>{
+    if(t.type==='income') return;
+    const cat=t.category;
+    const amt=(t.isAdj||t.isSplit)?(t.myShare||0):t.amount;
+    catExp[cat]=(catExp[cat]||0)+amt;
+  });
+  const totalBudget=budgetCats.reduce((s,c)=>s+(data.cats[c]||0),0);
+  const totalUsed=budgetCats.reduce((s,c)=>s+(catExp[c]||0),0);
+  const totalLeft=totalBudget-totalUsed;
+  const noteHtml=data.note?`<div class="card" style="margin-bottom:.75rem;font-size:13px;color:var(--text2);white-space:pre-wrap">${data.note}</div>`:'';
+  document.getElementById('budgetSummary').innerHTML=(totalBudget>0?`
+    <div class="metric"><div class="metric-label">予算合計</div><div class="metric-value">${fmt(totalBudget)}</div></div>
+    <div class="metric"><div class="metric-label">使用済み</div><div class="metric-value" style="color:var(--red)">${fmt(totalUsed)}</div></div>
+    <div class="metric full"><div class="metric-label">残り</div><div class="metric-value" style="color:${totalLeft>=0?'var(--green)':'var(--red)'}">${(totalLeft>=0?'':'-')+fmt(Math.abs(totalLeft))}</div><div class="metric-sub">${totalBudget>0?Math.round(totalUsed/totalBudget*100)+'% 使用':''}</div></div>
+  `:'')+noteHtml;
+  if(!budgetCats.length){document.getElementById('budgetList').innerHTML='<div class="empty">予算を設定してください</div>';return;}
+  document.getElementById('budgetList').innerHTML=budgetCats.map(c=>{
+    const budget=data.cats[c];
+    const used=catExp[c]||0;
+    const pct=Math.min(Math.round(used/budget*100),100);
+    const over=used>budget;
+    const barColor=over?'var(--red)':pct>=80?'var(--orange)':'var(--green)';
+    const left=budget-used;
+    return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:14px;font-weight:500">${c}</span>
+        <span style="font-size:12px;color:var(--text2)">${fmt(used)} <span style="color:var(--text3)">/ ${fmt(budget)}</span></span>
+      </div>
+      <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:5px">
+        <div style="height:100%;width:${pct}%;background:${barColor};border-radius:3px;transition:width .3s"></div>
+      </div>
+      <div style="font-size:11px;color:${over?'var(--red)':'var(--text3)'}">${over?'超過 '+fmt(used-budget):'残り '+fmt(left)+' ('+Math.round(left/budget*100)+'%)'}</div>
+    </div>`;
+  }).join('');
+}
+
 /* ===== タブ切り替え ===== */
 function switchTab(name){
-  const names=['home','history','chart','split','annual','settings'];
+  const names=['home','history','chart','split','budget','annual','settings'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   if(name==='chart'){const sub=document.getElementById('stab-me').classList.contains('active')?'me':'couple';renderCharts(sub);}
   if(name==='annual') renderAnnual();
   if(name==='settings') buildCatRateTable();
+  if(name==='budget'){buildBudgetInputTable();renderBudget();}
 }
 
 /* ===== 初期化 ===== */
