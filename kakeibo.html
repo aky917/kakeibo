@@ -109,6 +109,20 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
 </style>
 </head>
 <body>
+<!-- ロック画面 -->
+<div id="lockScreen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px">
+  <div style="font-size:48px">🔐</div>
+  <div style="font-size:20px;font-weight:600;color:var(--text)">家計簿</div>
+  <div style="font-size:13px;color:var(--text2)">パスワードを入力してください</div>
+  <input id="tokenInput" type="password" placeholder="パスワード"
+    style="width:100%;max-width:300px;padding:12px 16px;border:1px solid var(--border);border-radius:10px;font-size:16px;background:var(--bg2);color:var(--text);outline:none"
+    onkeydown="if(event.key==='Enter')submitToken()">
+  <button onclick="submitToken()"
+    style="width:100%;max-width:300px;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer">
+    ログイン
+  </button>
+  <div id="tokenError" style="font-size:12px;color:var(--red);min-height:16px"></div>
+</div>
 <div class="container">
 
   <!-- ヘッダー -->
@@ -354,7 +368,14 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
     <div class="card">
       <div class="section-title">☁️ クラウド同期</div>
       <p style="font-size:12px;color:var(--text2);margin-bottom:.75rem">変更時に自動でクラウドに保存されます。別端末でも同じデータを使えます。</p>
-      <button class="btn primary" onclick="cloudPull()">クラウドから手動で読み込む</button>
+      <button class="btn primary" onclick="cloudPull()" style="margin-bottom:.75rem">クラウドから手動で読み込む</button>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:.4rem">パスワードを変更</div>
+      <div style="display:flex;gap:8px">
+        <input id="newTokenInput" type="password" placeholder="新しいパスワード"
+          style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--bg);color:var(--text)">
+        <button class="btn primary" onclick="changeToken()">変更</button>
+      </div>
+      <div id="tokenChangeMsg" style="font-size:12px;margin-top:6px;min-height:16px"></div>
     </div>
     <div class="card">
       <div class="section-title">データのリセット</div>
@@ -463,10 +484,10 @@ document.getElementById('partnerNameInput').value=partnerName;
 
 /* ===== クラウド同期 ===== */
 const CLOUD_URL='https://kakeibo-api.iori-train0917.workers.dev';
-const CLOUD_TOKEN='kakeibo2024secret';
 let syncTimer=null;
+function getToken(){return localStorage.getItem('kakeibo_token')||'';}
 
-function cloudHeaders(){return{'Authorization':'Bearer '+CLOUD_TOKEN,'Content-Type':'application/json'};}
+function cloudHeaders(){return{'Authorization':'Bearer '+getToken(),'Content-Type':'application/json'};}
 
 function showSyncStatus(msg,color){
   const el=document.getElementById('syncStatus');
@@ -1253,12 +1274,48 @@ function switchTab(name){
   if(name==='budget'){buildBudgetInputTable();renderBudget();}
 }
 
+/* ===== 認証 ===== */
+function showLock(){
+  document.getElementById('lockScreen').style.display='flex';
+  document.querySelector('.container').style.display='none';
+  setTimeout(()=>document.getElementById('tokenInput').focus(),100);
+}
+function hideLock(){
+  document.getElementById('lockScreen').style.display='none';
+  document.querySelector('.container').style.display='';
+}
+async function submitToken(){
+  const token=document.getElementById('tokenInput').value.trim();
+  if(!token){document.getElementById('tokenError').textContent='パスワードを入力してください';return;}
+  // Workerに試し接続して認証確認
+  try{
+    const res=await fetch(CLOUD_URL+'/kakeibo',{headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}});
+    if(res.status===401){document.getElementById('tokenError').textContent='パスワードが違います';return;}
+    localStorage.setItem('kakeibo_token',token);
+    hideLock();
+    cloudPull();
+  }catch(e){
+    // オフラインでも保存済みトークンがあれば通す
+    localStorage.setItem('kakeibo_token',token);
+    hideLock();
+  }
+}
+function changeToken(){
+  const t=document.getElementById('newTokenInput').value.trim();
+  if(!t){document.getElementById('tokenChangeMsg').textContent='パスワードを入力してください';document.getElementById('tokenChangeMsg').style.color='var(--red)';return;}
+  localStorage.setItem('kakeibo_token',t);
+  document.getElementById('newTokenInput').value='';
+  document.getElementById('tokenChangeMsg').textContent='✓ 変更しました';
+  document.getElementById('tokenChangeMsg').style.color='var(--green)';
+}
+
 /* ===== 初期化 ===== */
 setType('expense');
 buildCatRateTable();
 updateLabels();
 updateHeader();renderHistory();renderSplit();
-cloudPull();
+// トークン未設定ならロック画面を表示
+if(!getToken()){showLock();}else{cloudPull();}
 </script>
 </body>
 </html>
