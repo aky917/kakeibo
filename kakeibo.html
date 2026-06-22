@@ -12,86 +12,162 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#F7F6F3;--bg2:#FFFFFF;--border:#E5E3DE;--text:#1A1917;--text2:#6B6860;--text3:#AAA89F;
-  --green:#1D9E75;--green-bg:#E1F5EE;--green-dark:#0F6E56;
-  --red:#D85A30;--red-bg:#FAECE7;--red-dark:#993C1D;
-  --blue:#378ADD;--purple:#7F77DD;--pink:#D4537E;--orange:#E8900A;
-  --radius:12px;--radius-sm:8px;
+  /* ── プレミアム洗練カラー ── */
+  --hdr:#111110;          /* ヘッダー背景 */
+  --hdr-border:rgba(255,255,255,.07);
+  --bg:#F9F8F6;           /* ページ背景 */
+  --bg2:#FFFFFF;          /* カード背景 */
+  --border:#E8E6E2;       /* ボーダー */
+  --text:#1A1917;         /* メインテキスト */
+  --text2:#7A786F;        /* サブテキスト */
+  --text3:#BAB8B0;        /* ミュートテキスト */
+  --green:#1D9E75;--green-bg:#E4F6EF;--green-dark:#0D6B4A;
+  --red:#D05830;--red-bg:#FAECE7;--red-dark:#8F3018;
+  --blue:#3A7FCC;--purple:#7F77DD;--pink:#D4537E;--orange:#D98A0A;
+  --accent:#1A1917;       /* ロック画面ボタン */
+  --radius:14px;--radius-sm:9px;
+  /* ヘッダー文字色 */
+  --hdr-text:rgba(255,255,255,.9);
+  --hdr-sub:rgba(255,255,255,.35);
+  --hdr-muted:rgba(255,255,255,.22);
 }
 body{font-family:-apple-system,'Hiragino Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:3rem}
-.container{max-width:430px;margin:0 auto;padding:0 1rem}
-.header{padding:1rem 1rem .5rem;display:flex;align-items:center;justify-content:space-between}
-.header h1{font-size:17px;font-weight:600}
+.container{max-width:430px;margin:0 auto}
+
+/* ── ヘッダー ── */
+.app-header{
+  background:var(--hdr);
+  padding:20px 18px 18px;
+  position:relative;
+  overflow:hidden;
+}
+/* 極細グリッド線 */
+.app-header::before{
+  content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:32px 32px;
+  pointer-events:none;
+}
+.header{padding:0;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;margin-bottom:18px}
+.header h1{font-size:12px;font-weight:700;color:var(--hdr-sub);letter-spacing:1.5px;text-transform:uppercase}
 .month-nav{display:flex;align-items:center;gap:8px}
-.nav-btn{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);width:28px;height:28px;cursor:pointer;color:var(--text);font-size:15px;display:flex;align-items:center;justify-content:center;font-family:inherit}
-.month-label{font-size:13px;font-weight:500;min-width:90px;text-align:center}
-.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 1rem .75rem}
-.metric{background:var(--bg2);border-radius:var(--radius);padding:.65rem .9rem;border:1px solid var(--border)}
+.nav-btn{background:rgba(255,255,255,.07);border:1px solid var(--hdr-border);border-radius:7px;width:26px;height:26px;cursor:pointer;color:var(--hdr-sub);font-size:14px;display:flex;align-items:center;justify-content:center;font-family:inherit;transition:background .15s}
+.nav-btn:active{background:rgba(255,255,255,.15)}
+.month-label{font-size:12px;font-weight:500;min-width:86px;text-align:center;color:var(--hdr-sub)}
+
+/* ── ヘッダー内メトリクス ── */
+.hdr-balance{position:relative;z-index:1;margin-bottom:16px}
+.hdr-balance-label{font-size:9px;color:var(--hdr-muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
+.hdr-balance-val{font-size:44px;font-weight:800;color:var(--hdr-text);letter-spacing:-3px;line-height:1}
+.hdr-balance-yen{font-size:20px;font-weight:400;color:rgba(255,255,255,.4);margin-right:1px;vertical-align:top;margin-top:9px;display:inline-block}
+.hdr-trend{font-size:10px;color:var(--hdr-muted);margin-top:5px}
+.hdr-trend .pos{color:#5DCEAA}
+.hdr-trend .neg{color:#FF8A70}
+
+.hdr-chips{display:flex;gap:8px;position:relative;z-index:1}
+.hdr-chip{flex:1;border:1px solid var(--hdr-border);border-radius:11px;padding:9px 11px;background:rgba(255,255,255,.04)}
+.hdr-chip-label{font-size:9px;color:var(--hdr-muted);letter-spacing:.8px;margin-bottom:4px}
+.hdr-chip-val{font-size:14px;font-weight:700;letter-spacing:-.5px}
+.hdr-chip-val.inc{color:#5DCEAA}
+.hdr-chip-val.exp{color:#FF8A70}
+.hdr-chip-val.sav{color:rgba(255,255,255,.65)}
+
+/* ── 同期ステータス ── */
+#syncStatus{text-align:right;font-size:10px;color:var(--text3);padding:5px 18px 2px;min-height:18px}
+
+/* ── タブ ── */
+.tabs{display:flex;padding:0 14px;gap:3px;margin-bottom:1rem;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:6px 10px;font-size:11px;text-align:center;cursor:pointer;color:var(--text3);border-radius:8px;border:1px solid transparent;white-space:nowrap;transition:all .15s}
+.tab.active{background:var(--bg2);color:var(--text);border-color:var(--border);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+
+/* ── ページ・カード ── */
+.page{display:none;padding:0 14px}.page.active{display:block}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;margin-bottom:.75rem;box-shadow:0 1px 3px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.03)}
+.section-title{font-size:9px;font-weight:700;color:var(--text3);margin-bottom:.6rem;text-transform:uppercase;letter-spacing:1.5px}
+
+/* ── メトリクスグリッド（グラフ・予算・年次タブ用） ── */
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 14px .75rem}
+.metric{background:var(--bg2);border-radius:var(--radius);padding:.65rem .9rem;border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .metric.full{grid-column:span 2}
 .metric-label{font-size:10px;color:var(--text2);margin-bottom:2px}
-.metric-value{font-size:17px;font-weight:600;letter-spacing:-.5px}
+.metric-value{font-size:17px;font-weight:700;letter-spacing:-.5px}
 .metric-sub{font-size:11px;color:var(--text2);margin-top:2px}
-.tabs{display:flex;padding:0 1rem;gap:3px;margin-bottom:1rem;overflow-x:auto;-webkit-overflow-scrolling:touch}
-.tabs::-webkit-scrollbar{display:none}
-.tab{flex-shrink:0;padding:7px 8px;font-size:11px;text-align:center;cursor:pointer;color:var(--text2);border-radius:var(--radius-sm);border:1px solid transparent;white-space:nowrap}
-.tab.active{background:var(--bg2);color:var(--text);border-color:var(--border);font-weight:500}
-.page{display:none;padding:0 1rem}.page.active{display:block}
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:.75rem}
-.section-title{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.5px}
-label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px}
-input,select,textarea{width:100%;padding:9px 11px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2);color:var(--text);-webkit-appearance:none;appearance:none;font-family:inherit}
+
+/* ── フォーム ── */
+label{font-size:11px;color:var(--text2);display:block;margin-bottom:4px;font-weight:500}
+input,select,textarea{width:100%;padding:9px 11px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);-webkit-appearance:none;appearance:none;font-family:inherit;transition:border-color .15s}
 textarea{resize:none;height:52px;font-size:13px}
-input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#888;background:var(--bg2)}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .form-row.full{grid-template-columns:1fr;margin-bottom:8px}
-.btn{padding:11px;border-radius:var(--radius);font-size:14px;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text);width:100%;font-weight:500;font-family:inherit}
+
+/* ── ボタン ── */
+.btn{padding:11px;border-radius:var(--radius);font-size:14px;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text);width:100%;font-weight:600;font-family:inherit;transition:all .15s}
 .btn:active{transform:scale(.98);opacity:.85}
-.btn.primary{background:var(--text);color:var(--bg);border-color:var(--text);margin-top:8px}
+.btn.primary{background:var(--hdr);color:#F9F8F6;border-color:var(--hdr);margin-top:8px;letter-spacing:.3px}
 .btn.danger{background:var(--red-bg);color:var(--red-dark);border-color:var(--red-dark)}
 .btn.export{background:var(--green-bg);color:var(--green-dark);border-color:var(--green-dark)}
-.btn.import-btn{background:#F0F4FB;color:var(--blue);border-color:var(--blue)}
-.toggle{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:8px}
-.toggle-btn{padding:9px;text-align:center;cursor:pointer;font-size:13px;color:var(--text2);background:var(--bg2);border:none;font-family:inherit}
-.toggle-btn.active.income{background:var(--green-bg);color:var(--green-dark);font-weight:500}
-.toggle-btn.active.expense{background:var(--red-bg);color:var(--red-dark);font-weight:500}
-.toggle-btn.active.sel{background:var(--text);color:var(--bg);font-weight:500}
-.toggle-btn.active.me{background:#EEF0FB;color:#4845A8;font-weight:500}
-.toggle-btn.active.her{background:#FBF0F5;color:#8C2E5C;font-weight:500}
+.btn.import-btn{background:#EEF4FB;color:var(--blue);border-color:var(--blue)}
+
+/* ── トグル ── */
+.toggle{display:grid;grid-template-columns:1fr 1fr;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px;gap:3px;margin-bottom:8px}
+.toggle-btn{padding:8px;text-align:center;cursor:pointer;font-size:13px;color:var(--text2);background:transparent;border:none;border-radius:6px;font-family:inherit;transition:all .15s;font-weight:500}
+.toggle-btn.active.income{background:var(--bg2);color:var(--green-dark);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.toggle-btn.active.expense{background:var(--bg2);color:var(--red-dark);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.toggle-btn.active.sel{background:var(--hdr);color:#F9F8F6;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.toggle-btn.active.me{background:var(--bg2);color:#4845A8;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.toggle-btn.active.her{background:var(--bg2);color:#8C2E5C;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+/* ── チェックボックス ── */
 .check-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.check-row input[type=checkbox]{width:16px;height:16px;cursor:pointer;flex-shrink:0}
-.check-box-wrap{border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:6px;transition:all .15s;cursor:pointer}
+.check-row input[type=checkbox]{width:16px;height:16px;cursor:pointer;flex-shrink:0;accent-color:var(--hdr)}
+.check-box-wrap{border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;margin-bottom:6px;transition:all .15s;cursor:pointer;background:var(--bg)}
 .check-box-wrap.active-adj{background:#FFF8EC;border-color:var(--orange)}
 .check-box-wrap.active-split{background:#EEF0FB;border-color:#7F77DD}
-.check-row label{font-size:13px;color:var(--text2);margin:0;cursor:pointer}
-.tx-item{display:flex;align-items:center;gap:10px;padding:.6rem 0;border-bottom:1px solid var(--border);cursor:pointer}
+.check-row label{font-size:13px;color:var(--text2);margin:0;cursor:pointer;font-weight:400}
+
+/* ── 取引リスト ── */
+.tx-item{display:flex;align-items:center;gap:10px;padding:.65rem 0;border-bottom:1px solid var(--border);cursor:pointer}
 .tx-item:last-child{border-bottom:none}
+.tx-item:active{opacity:.7}
 .tx-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
 .tx-info{flex:1;min-width:0}
-.tx-memo{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx-memo{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tx-sub{font-size:11px;color:var(--text2);margin-top:1px}
-.tx-amount{font-size:13px;font-weight:600;flex-shrink:0}
+.tx-amount{font-size:13px;font-weight:700;flex-shrink:0;letter-spacing:-.3px}
+
+/* ── バッジ ── */
 .badge{display:inline-block;padding:1px 5px;border-radius:4px;font-size:10px;font-weight:600;margin-left:3px;vertical-align:middle}
 .badge-me{background:#EEF0FB;color:#4845A8}
 .badge-her{background:#FBF0F5;color:#8C2E5C}
 .badge-adj{background:#FFF0D0;color:#8A5A00}
+
+/* ── 精算ボックス ── */
 .result-box{border-radius:var(--radius);padding:1.25rem;text-align:center;margin-bottom:.75rem}
-.result-box.receive{background:var(--green-bg)}
-.result-box.pay{background:var(--red-bg)}
+.result-box.receive{background:var(--green-bg);border:1px solid rgba(29,158,117,.15)}
+.result-box.pay{background:var(--red-bg);border:1px solid rgba(208,88,48,.15)}
 .result-box.even{background:var(--bg2);border:1px solid var(--border)}
-.detail-row{display:flex;justify-content:space-between;align-items:flex-start;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);color:var(--text2);gap:8px}
+
+/* ── 詳細行 ── */
+.detail-row{display:flex;justify-content:space-between;align-items:flex-start;font-size:13px;padding:7px 0;border-bottom:1px solid var(--border);color:var(--text2);gap:8px}
 .detail-row:last-child{border-bottom:none}
 .dr-right{text-align:right;flex-shrink:0}
-.dr-main{color:var(--text);font-weight:500}
+.dr-main{color:var(--text);font-weight:600}
 .dr-sub{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* ── 空状態・凡例・その他 ── */
 .empty{text-align:center;color:var(--text3);font-size:13px;padding:2rem 0}
 .legend-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .legend-item{display:flex;align-items:center;gap:3px;font-size:11px;color:var(--text2)}
 .legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 .subtab-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem}
 .subtab{padding:8px;text-align:center;font-size:13px;cursor:pointer;border-radius:var(--radius-sm);border:1px solid var(--border);color:var(--text2);background:var(--bg2)}
-.subtab.active{background:var(--text);color:var(--bg);border-color:var(--text);font-weight:500}
+.subtab.active{background:var(--hdr);color:#F9F8F6;border-color:var(--hdr);font-weight:600}
+
+/* ── テーブル ── */
 .data-table{width:100%;border-collapse:collapse;font-size:12px}
-.data-table th{background:var(--bg);padding:6px 8px;text-align:right;color:var(--text2);font-weight:500;border-bottom:1px solid var(--border)}
+.data-table th{background:var(--bg);padding:6px 8px;text-align:right;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border)}
 .data-table th:first-child{text-align:left}
 .data-table td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--border)}
 .data-table td:first-child{text-align:left;color:var(--text2)}
@@ -100,47 +176,64 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
 .cat-rate-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
 .cat-rate-row:last-child{border-bottom:none}
 .cat-name{font-size:13px;flex:1}
-.cat-rate-input{width:60px;padding:5px 8px;font-size:13px;text-align:right;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2);color:var(--text)}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:flex;align-items:flex-end;justify-content:center}
-.modal{background:var(--bg);border-radius:var(--radius) var(--radius) 0 0;width:100%;max-width:430px;padding:1.25rem 1rem 2rem;max-height:90vh;overflow-y:auto}
-.modal-title{font-size:16px;font-weight:600;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
+.cat-rate-input{width:60px;padding:5px 8px;font-size:13px;text-align:right;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
+.modal{background:var(--bg);border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:1.25rem 1rem 2rem;max-height:90vh;overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,.2)}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
 .modal-close{font-size:20px;cursor:pointer;color:var(--text2);background:none;border:none;font-family:inherit}
 @media print{body{background:#fff}.no-print{display:none!important}.container{max-width:100%;padding:0}.card{border:1px solid #ccc;break-inside:avoid}}
 </style>
 </head>
 <body>
 <!-- ロック画面 -->
-<div id="lockScreen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px">
-  <div style="font-size:48px">🔐</div>
-  <div style="font-size:20px;font-weight:600;color:var(--text)">家計簿</div>
-  <div style="font-size:13px;color:var(--text2)">パスワードを入力してください</div>
+<div id="lockScreen" style="display:none;position:fixed;inset:0;background:var(--hdr);z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px">
+  <div style="font-size:44px">🔐</div>
+  <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-.5px">家計簿</div>
+  <div style="font-size:13px;color:rgba(255,255,255,.4);letter-spacing:.3px">パスワードを入力してください</div>
   <input id="tokenInput" type="password" placeholder="パスワード"
-    style="width:100%;max-width:300px;padding:12px 16px;border:1px solid var(--border);border-radius:10px;font-size:16px;background:var(--bg2);color:var(--text);outline:none"
+    style="width:100%;max-width:300px;padding:13px 16px;border:1px solid rgba(255,255,255,.15);border-radius:12px;font-size:16px;background:rgba(255,255,255,.08);color:#fff;outline:none"
     onkeydown="if(event.key==='Enter')submitToken()">
   <button onclick="submitToken()"
-    style="width:100%;max-width:300px;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer">
+    style="width:100%;max-width:300px;padding:13px;background:#fff;color:#111110;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;letter-spacing:.3px">
     ログイン
   </button>
-  <div id="tokenError" style="font-size:12px;color:var(--red);min-height:16px"></div>
+  <div id="tokenError" style="font-size:12px;color:#FF8A70;min-height:16px"></div>
 </div>
 <div class="container">
 
-  <!-- ヘッダー -->
-  <div class="header no-print">
-    <h1 id="myNameHeader">&#x1F4B4; 家計簿</h1>
-    <div class="month-nav">
-      <button class="nav-btn" onclick="changeMonth(-1)">&#8249;</button>
-      <span class="month-label" id="monthLabel"></span>
-      <button class="nav-btn" onclick="changeMonth(1)">&#8250;</button>
+  <!-- ダークヘッダー -->
+  <div class="app-header no-print">
+    <div class="header">
+      <h1 id="myNameHeader">家計簿</h1>
+      <div class="month-nav">
+        <button class="nav-btn" onclick="changeMonth(-1)">&#8249;</button>
+        <span class="month-label" id="monthLabel"></span>
+        <button class="nav-btn" onclick="changeMonth(1)">&#8250;</button>
+      </div>
+    </div>
+    <!-- 残高（大） -->
+    <div class="hdr-balance">
+      <div class="hdr-balance-label">NET BALANCE</div>
+      <div class="hdr-balance-val"><span class="hdr-balance-yen">¥</span><span id="totalBalance">0</span></div>
+      <div class="hdr-trend" id="balVsPrev"></div>
+    </div>
+    <!-- 収入・支出・貯蓄率チップ -->
+    <div class="hdr-chips">
+      <div class="hdr-chip">
+        <div class="hdr-chip-label">収入</div>
+        <div class="hdr-chip-val inc" id="totalIncome">¥0</div>
+      </div>
+      <div class="hdr-chip">
+        <div class="hdr-chip-label">支出</div>
+        <div class="hdr-chip-val exp" id="totalExpense">¥0</div>
+      </div>
+      <div class="hdr-chip">
+        <div class="hdr-chip-label">貯蓄率</div>
+        <div class="hdr-chip-val sav" id="savingsRate">-</div>
+      </div>
     </div>
   </div>
-  <div class="metric-grid no-print">
-    <div class="metric"><div class="metric-label">収入</div><div class="metric-value" style="color:var(--green)" id="totalIncome">¥0</div></div>
-    <div class="metric"><div class="metric-label">支出</div><div class="metric-value" style="color:var(--red)" id="totalExpense">¥0</div></div>
-    <div class="metric"><div class="metric-label">収支</div><div class="metric-value" id="totalBalance">¥0</div><div class="metric-sub" id="balVsPrev"></div></div>
-    <div class="metric"><div class="metric-label">貯蓄率</div><div class="metric-value" id="savingsRate">-</div><div class="metric-sub" id="avgExpense"></div></div>
-  </div>
-  <div id="syncStatus" style="text-align:right;font-size:11px;color:var(--text2);padding:2px 12px 0;min-height:16px"></div>
+  <div id="syncStatus"></div>
   <div class="tabs no-print">
     <div class="tab active" onclick="switchTab('home')">&#9999;&#65039; 入力</div>
     <div class="tab" onclick="switchTab('history')">&#128203; 一覧</div>
@@ -624,7 +717,7 @@ function saveNames(){
   updateLabels();alert('保存しました');
 }
 function updateLabels(){
-  document.getElementById('myNameHeader').textContent='\u{1F4B4} '+myName+'の家計簿';
+  document.getElementById('myNameHeader').textContent=myName+'の家計簿';
   document.getElementById('btn-her').textContent=partnerName+'が払った';
   document.getElementById('edit-btn-her').textContent=partnerName+'が払った';
   document.getElementById('herRateLabel').textContent=partnerName+'の負担率';
@@ -639,17 +732,14 @@ function updateHeader(){
   document.getElementById('totalIncome').textContent=fmt(inc);
   document.getElementById('totalExpense').textContent=fmt(exp);
   const bal=inc-exp;
-  const balEl=document.getElementById('totalBalance');
-  balEl.textContent=(bal>=0?'':'-')+fmt(bal);balEl.style.color=bal>=0?'var(--blue)':'var(--red)';
+  document.getElementById('totalBalance').textContent=(bal>=0?'':'-')+Math.abs(Math.round(bal)).toLocaleString();
   const sr=inc>0?Math.round(bal/inc*100):null;
   document.getElementById('savingsRate').textContent=sr!=null?sr+'%':'-';
-  document.getElementById('savingsRate').style.color=sr>=20?'var(--green)':sr>=0?'var(--blue)':'var(--red)';
   let pm=viewMonth-1,py=viewYear;if(pm<0){pm=11;py--;}
   const prevExp=realExp(monthTx(py,pm));
-  document.getElementById('balVsPrev').textContent=prevExp>0?'前月比'+(exp-prevExp>=0?'+':'')+fmtS(exp-prevExp):'';
-  let te=0,cn=0;
-  for(let i=1;i<=6;i++){let m2=viewMonth-i,y2=viewYear;while(m2<0){m2+=12;y2--;}const t2=monthTx(y2,m2);if(t2.length){te+=realExp(t2);cn++;}}
-  document.getElementById('avgExpense').textContent=cn>0?'6ヶ月平均 '+fmtS(te/cn):'';
+  const trendEl=document.getElementById('balVsPrev');
+  if(prevExp>0){const diff=exp-prevExp;trendEl.innerHTML='支出前月比 <span class="'+(diff<=0?'pos':'neg')+'">'+(diff>=0?'+':'')+fmtS(diff)+' '+(diff<=0?'↓':'↑')+'</span>';}
+  else{trendEl.textContent='';}
 }
 function changeMonth(d){
   viewMonth+=d;if(viewMonth<0){viewMonth=11;viewYear--;}if(viewMonth>11){viewMonth=0;viewYear++;}
