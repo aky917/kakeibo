@@ -241,6 +241,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
     <div class="tab" onclick="switchTab('split')">&#128106; 割り勘</div>
     <div class="tab" onclick="switchTab('budget')">&#127919; 予算</div>
     <div class="tab" onclick="switchTab('annual')">&#128197; 年次</div>
+    <div class="tab" onclick="switchTab('fixed')">&#128204; 固定費</div>
     <div class="tab" onclick="switchTab('settings')">&#9881;&#65039; 設定</div>
   </div>
 
@@ -331,6 +332,35 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
     </div>
     <div class="card">
       <div id="txList"><div class="empty">記録がありません</div></div>
+    </div>
+
+    <!-- 明細見直し -->
+    <div class="card" style="margin-top:.25rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+        <div class="section-title" style="margin:0">&#128203; 明細見直し</div>
+        <button onclick="openCardMgr()" style="background:none;border:none;font-size:12px;color:var(--text3);cursor:pointer;padding:2px 0">カード会社を管理 ›</button>
+      </div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:.75rem">カード会社ごとに確認状況を記録。チェックとメモは月ごとに管理されます。</p>
+      <div id="reviewList"></div>
+      <div id="reviewNoCards" style="display:none">
+        <div class="empty" style="padding:.75rem 0;font-size:12px">カード会社が未登録です。<br>「カード会社を管理」から追加してください。</div>
+      </div>
+    </div>
+
+    <!-- カード会社管理モーダル -->
+    <div class="modal-overlay" id="cardMgrModal" style="display:none" onclick="if(event.target.id==='cardMgrModal')closeCardMgr()">
+      <div class="modal">
+        <div class="modal-title">
+          <span>カード会社を管理</span>
+          <button class="modal-close" onclick="closeCardMgr()">&#10005;</button>
+        </div>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:.75rem">登録した会社名は毎月引き継がれます</p>
+        <div id="cardMgrList" style="margin-bottom:1rem"></div>
+        <div style="display:flex;gap:8px">
+          <input id="cardMgrInput" type="text" placeholder="例：楽天カード、VISA、PayPay" style="flex:1">
+          <button class="btn primary" onclick="addCard()" style="width:auto;padding:9px 16px;white-space:nowrap">追加</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -431,6 +461,50 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
   </div>
 
   <!-- 設定タブ -->
+
+  <!-- 固定費ページ -->
+  <div id="page-fixed" class="page">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+        <div class="section-title" style="margin:0">&#128204; 固定費・サブスク一覧</div>
+        <div id="fixedTotal" style="font-size:15px;font-weight:700;color:var(--text)"></div>
+      </div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:.75rem">毎月の固定支出を登録しておくと合計が一目でわかります</p>
+      <div id="fixedList"></div>
+      <button class="btn" style="margin-top:.5rem;font-size:13px" onclick="openFixedForm()">&#43; 項目を追加</button>
+    </div>
+    <div class="card" id="fixedFormCard" style="display:none">
+      <div class="section-title" id="fixedFormTitle">固定費を追加</div>
+      <div class="form-row">
+        <div><label>名前</label><input type="text" id="fixedName" placeholder="例：Netflix、家賃"></div>
+        <div><label>金額（円/月）</label><input type="number" id="fixedAmount" inputmode="numeric" placeholder="0"></div>
+      </div>
+      <div class="form-row">
+        <div><label>カテゴリ</label>
+          <select id="fixedCat">
+            <option>📱 通信・サブスク</option>
+            <option>🏠 住居</option>
+            <option>💡 光熱費</option>
+            <option>🛡 保険</option>
+            <option>🚗 自動車</option>
+            <option>🎮 娯楽・サービス</option>
+            <option>💊 医療・健康</option>
+            <option>📚 教育・学習</option>
+            <option>🤝 その他</option>
+          </select>
+        </div>
+        <div><label>支払日</label><input type="text" id="fixedBillingDay" placeholder="例：毎月1日、末日"></div>
+      </div>
+      <div class="form-row full">
+        <div><label>メモ</label><input type="text" id="fixedNote" placeholder="例：家族共有、年払いあり"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn" onclick="cancelFixedForm()" style="flex:1">キャンセル</button>
+        <button class="btn primary" onclick="saveFixed()" style="flex:2">保存する</button>
+      </div>
+    </div>
+  </div>
+
   <div id="page-settings" class="page">
     <div class="card">
       <div class="section-title">表示名の設定</div>
@@ -612,7 +686,7 @@ async function cloudPull(){
       localStorage.setItem('kakeibo_v7',JSON.stringify(transactions));
       localStorage.setItem('kakeibo_updatedAt',String(data.updatedAt));
       if(data.budgets) restoreAllBudgets(data.budgets);
-      updateHeader();renderHistory();renderSplit();
+      updateHeader();renderHistory();renderSplit();renderReviews();
       showSyncStatus('☁️ クラウドから復元しました');
     }else{
       showSyncStatus('☁️ 同期済み');
@@ -743,7 +817,7 @@ function updateHeader(){
 }
 function changeMonth(d){
   viewMonth+=d;if(viewMonth<0){viewMonth=11;viewYear--;}if(viewMonth>11){viewMonth=0;viewYear++;}
-  updateHeader();renderHistory();renderSplit();
+  updateHeader();renderHistory();renderSplit();renderReviews();
   const sub=document.getElementById('stab-me').classList.contains('active')?'me':'couple';
   renderCharts(sub);
 }
@@ -859,7 +933,7 @@ function addTransaction(){
   document.getElementById('adjRateSection').style.display='none';
   document.getElementById('sharePreview').textContent='';
   setPayer('me');
-  updateHeader();renderHistory();renderSplit();switchTab('history');
+  updateHeader();renderHistory();renderSplit();renderReviews();switchTab('history');
 }
 
 /* ===== 一覧 ===== */
@@ -1077,13 +1151,13 @@ function saveEdit(){
   if(isAdj){myRate=parseInt(document.getElementById('edit-adjRate').value)||50;myShare=Math.ceil(amount*myRate/100);herShare=Math.floor(amount*(100-myRate)/100);}
   const idx=transactions.findIndex(x=>x.id===editingId);
   transactions[idx]={id:editingId,type:editTxType,amount,category:document.getElementById('edit-category').value,date:document.getElementById('edit-date').value,memo:document.getElementById('edit-memo').value||document.getElementById('edit-category').value,note:document.getElementById('edit-note').value,isSplit,isAdj,payer:isSplit?editSplitPayer:null,myShare,herShare,myRate};
-  save();closeModalDirect();updateHeader();renderHistory();renderSplit();
+  save();closeModalDirect();updateHeader();renderHistory();renderSplit();renderReviews();
 }
 function deleteTransaction(){
   if(!editingId) return;
   if(!confirm('この取引を削除しますか？')) return;
   transactions=transactions.filter(x=>x.id!==editingId);
-  save();closeModalDirect();updateHeader();renderHistory();renderSplit();
+  save();closeModalDirect();updateHeader();renderHistory();renderSplit();renderReviews();
 }
 
 /* ===== グラフ ===== */
@@ -1213,7 +1287,7 @@ function importCSV(e){
       if(existing.has(String(obj.id))){skipped++;continue;}
       transactions.push(obj);added++;
     }
-    save();updateHeader();renderHistory();renderSplit();
+    save();updateHeader();renderHistory();renderSplit();renderReviews();
     alert(`完了: ${added}件追加、${skipped}件スキップ`);e.target.value='';
   };
   reader.readAsText(file,'UTF-8');
@@ -1253,7 +1327,7 @@ function exportExcelMonth(){
 }
 function resetAll(){
   if(!confirm('全データを削除します。本当によろしいですか？')) return;
-  transactions=[];save();updateHeader();renderHistory();renderSplit();alert('削除しました');
+  transactions=[];save();updateHeader();renderHistory();renderSplit();renderReviews();alert('削除しました');
 }
 
 /* ===== 予算 ===== */
@@ -1354,14 +1428,15 @@ function renderBudget(){
 
 /* ===== タブ切り替え ===== */
 function switchTab(name){
-  const names=['home','history','chart','split','budget','annual','settings'];
+  const names=['home','history','chart','split','budget','annual','fixed','settings'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   if(name==='chart'){const sub=document.getElementById('stab-me').classList.contains('active')?'me':'couple';renderCharts(sub);}
   if(name==='annual') renderAnnual();
   if(name==='settings') buildCatRateTable();
-  if(name==='budget'){buildBudgetInputTable();renderBudget();}
+  if(name==='budget'){buildBudgetInputTable();renderBudget();renderReviews();}
+  if(name==='fixed'){renderFixed();}
 }
 
 /* ===== 認証 ===== */
@@ -1401,11 +1476,210 @@ function changeToken(){
   document.getElementById('tokenChangeMsg').style.color='var(--green)';
 }
 
+
+/* ===== 明細見直し ===== */
+// カード会社マスタ（月をまたいで引き継ぎ）
+const CARDS_KEY = 'kakeibo_cards_v1';
+function loadCards(){try{const r=localStorage.getItem(CARDS_KEY);return r?JSON.parse(r):[]}catch(e){return [];}}
+function saveCards(arr){localStorage.setItem(CARDS_KEY,JSON.stringify(arr));}
+
+// 月ごとの見直し状態 { カード名: {checked:bool, memo:string, checkedAt:string} }
+function reviewKey(y,m){return 'kakeibo_review_'+y+'-'+String(m+1).padStart(2,'0');}
+function loadReviews(y,m){try{const r=localStorage.getItem(reviewKey(y,m));return r?JSON.parse(r):{}}catch(e){return {};}}
+function saveReviews(y,m,obj){localStorage.setItem(reviewKey(y,m),JSON.stringify(obj));}
+
+function renderReviews(){
+  const cards=loadCards();
+  const el=document.getElementById('reviewList');
+  const noCards=document.getElementById('reviewNoCards');
+  if(!el) return;
+  if(!cards.length){
+    el.innerHTML='';
+    if(noCards) noCards.style.display='';
+    return;
+  }
+  if(noCards) noCards.style.display='none';
+  const state=loadReviews(viewYear,viewMonth);
+  el.innerHTML=cards.map((card,i)=>{
+    const s=state[card]||{checked:false,memo:'',checkedAt:''};
+    const checked=s.checked;
+    return `<div style="border:1px solid ${checked?'rgba(29,158,117,.25)':'var(--border)'};border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;background:${checked?'var(--green-bg)':'var(--bg)'}">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:${checked||!s.memo?'0':'6px'}">
+        <div onclick="toggleCardCheck('${card.replace(/'/g,"\'")}',${i})"
+          style="width:22px;height:22px;border-radius:6px;border:2px solid ${checked?'var(--green)':'var(--border)'};background:${checked?'var(--green)':'var(--bg2)'};display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:13px;transition:all .15s">
+          ${checked?'<span style="color:#fff">✓</span>':''}
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:var(--text)">${card}</div>
+          ${checked&&s.checkedAt?`<div style="font-size:10px;color:var(--green-dark);margin-top:1px">確認済 ${s.checkedAt}</div>`:''}
+        </div>
+        <button onclick="deleteCard(${i})" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--text3);flex-shrink:0;padding:2px">✕</button>
+      </div>
+      <textarea
+        placeholder="メモ（任意）例：6/15締め分まで照合済"
+        oninput="updateCardMemo('${card.replace(/'/g,"\'")}',this.value)"
+        style="width:100%;margin-top:8px;padding:7px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text);resize:none;height:50px;display:block;font-family:inherit"
+      >${s.memo||''}</textarea>
+    </div>`;
+  }).join('');
+}
+
+function toggleCardCheck(card,i){
+  const state=loadReviews(viewYear,viewMonth);
+  const s=state[card]||{checked:false,memo:'',checkedAt:''};
+  const now=new Date();
+  s.checked=!s.checked;
+  s.checkedAt=s.checked?now.toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit'})+' '+now.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):'';
+  state[card]=s;
+  saveReviews(viewYear,viewMonth,state);
+  renderReviews();
+}
+
+function updateCardMemo(card,memo){
+  const state=loadReviews(viewYear,viewMonth);
+  if(!state[card]) state[card]={checked:false,memo:'',checkedAt:''};
+  state[card].memo=memo;
+  saveReviews(viewYear,viewMonth,state);
+}
+
+// カード会社モーダル
+function openCardMgr(){
+  renderCardMgr();
+  document.getElementById('cardMgrModal').style.display='flex';
+}
+function closeCardMgr(){
+  document.getElementById('cardMgrModal').style.display='none';
+  renderReviews();
+}
+function renderCardMgr(){
+  const cards=loadCards();
+  const el=document.getElementById('cardMgrList');
+  if(!cards.length){el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:4px 0">まだ登録がありません</div>';return;}
+  el.innerHTML=cards.map((c,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <div style="flex:1;font-size:13px;font-weight:500;color:var(--text)">${c}</div>
+      <button onclick="moveCard(${i},-1)" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:12px;cursor:pointer">↑</button>
+      <button onclick="moveCard(${i},1)" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:12px;cursor:pointer">↓</button>
+      <button onclick="deleteCard(${i})" style="background:var(--red-bg);border:1px solid var(--red-dark);border-radius:6px;padding:3px 8px;font-size:12px;cursor:pointer;color:var(--red-dark)">削除</button>
+    </div>`).join('');
+}
+function addCard(){
+  const input=document.getElementById('cardMgrInput');
+  const name=input.value.trim();
+  if(!name) return;
+  const cards=loadCards();
+  if(cards.includes(name)){alert('すでに登録されています');return;}
+  cards.push(name);
+  saveCards(cards);
+  input.value='';
+  renderCardMgr();
+}
+function deleteCard(i){
+  const cards=loadCards();
+  if(!confirm(cards[i]+'を削除しますか？（見直しメモは各月のデータに残ります）')) return;
+  cards.splice(i,1);
+  saveCards(cards);
+  renderCardMgr();
+  renderReviews();
+}
+function moveCard(i,dir){
+  const cards=loadCards();
+  const j=i+dir;
+  if(j<0||j>=cards.length) return;
+  [cards[i],cards[j]]=[cards[j],cards[i]];
+  saveCards(cards);
+  renderCardMgr();
+}
+
+/* ===== 固定費 ===== */
+const FIXED_KEY='kakeibo_fixed_v1';
+function loadFixed(){try{const r=localStorage.getItem(FIXED_KEY);return r?JSON.parse(r):[]}catch(e){return [];}}
+function saveFixedData(arr){localStorage.setItem(FIXED_KEY,JSON.stringify(arr));}
+let editingFixedIdx=null;
+function renderFixed(){
+  const arr=loadFixed();
+  const total=arr.reduce((s,f)=>s+Number(f.amount),0);
+  const el=document.getElementById('fixedList');
+  const totalEl=document.getElementById('fixedTotal');
+  if(totalEl) totalEl.textContent='月計 '+fmt(total);
+  if(!arr.length){
+    el.innerHTML='<div class="empty" style="padding:.75rem 0;font-size:12px">固定費がまだ登録されていません</div>';
+    return;
+  }
+  // カテゴリ別にグループ化
+  const groups={};
+  arr.forEach((f,i)=>{if(!groups[f.cat]) groups[f.cat]=[];groups[f.cat].push({...f,idx:i});});
+  el.innerHTML=Object.entries(groups).map(([cat,items])=>{
+    const catTotal=items.reduce((s,f)=>s+Number(f.amount),0);
+    return `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0 6px;border-bottom:1px solid var(--border);margin-bottom:4px">
+        <div style="font-size:11px;font-weight:700;color:var(--text2)">${cat}</div>
+        <div style="font-size:11px;font-weight:600;color:var(--text2)">${fmt(catTotal)}</div>
+      </div>
+      ${items.map(f=>`
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;color:var(--text)">${f.name}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:1px">${f.billingDay?f.billingDay+'　':''}${f.note||''}</div>
+          </div>
+          <div style="font-size:14px;font-weight:700;color:var(--red);flex-shrink:0">${fmt(f.amount)}</div>
+          <div style="display:flex;gap:4px;flex-shrink:0">
+            <button onclick="editFixed(${f.idx})" style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:4px 8px;font-size:11px;cursor:pointer;color:var(--text2)">編集</button>
+            <button onclick="deleteFixed(${f.idx})" style="background:var(--red-bg);border:1px solid var(--red-dark);border-radius:7px;padding:4px 8px;font-size:11px;cursor:pointer;color:var(--red-dark)">削除</button>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+function openFixedForm(idx=null){
+  editingFixedIdx=idx;
+  const card=document.getElementById('fixedFormCard');
+  card.style.display='';
+  if(idx!=null){
+    const f=loadFixed()[idx];
+    document.getElementById('fixedFormTitle').textContent='固定費を編集';
+    document.getElementById('fixedName').value=f.name;
+    document.getElementById('fixedAmount').value=f.amount;
+    document.getElementById('fixedCat').value=f.cat;
+    document.getElementById('fixedBillingDay').value=f.billingDay||'';
+    document.getElementById('fixedNote').value=f.note||'';
+  } else {
+    document.getElementById('fixedFormTitle').textContent='固定費を追加';
+    document.getElementById('fixedName').value='';
+    document.getElementById('fixedAmount').value='';
+    document.getElementById('fixedBillingDay').value='';
+    document.getElementById('fixedNote').value='';
+  }
+  card.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function cancelFixedForm(){
+  document.getElementById('fixedFormCard').style.display='none';
+  editingFixedIdx=null;
+}
+function saveFixed(){
+  const name=document.getElementById('fixedName').value.trim();
+  const amount=parseInt(document.getElementById('fixedAmount').value)||0;
+  if(!name){alert('名前を入力してください');return;}
+  if(!amount){alert('金額を入力してください');return;}
+  const arr=loadFixed();
+  const item={name,amount,cat:document.getElementById('fixedCat').value,billingDay:document.getElementById('fixedBillingDay').value.trim(),note:document.getElementById('fixedNote').value.trim()};
+  if(editingFixedIdx!=null) arr[editingFixedIdx]=item;
+  else arr.push(item);
+  saveFixedData(arr);
+  cancelFixedForm();
+  renderFixed();
+}
+function editFixed(i){openFixedForm(i);}
+function deleteFixed(i){
+  if(!confirm('削除しますか？')) return;
+  const arr=loadFixed();arr.splice(i,1);saveFixedData(arr);renderFixed();
+}
+
 /* ===== 初期化 ===== */
 setType('expense');
 buildCatRateTable();
 updateLabels();
-updateHeader();renderHistory();renderSplit();
+updateHeader();renderHistory();renderSplit();renderReviews();
 // トークン未設定ならロック画面を表示
 if(!getToken()){showLock();}else{cloudPull();}
 </script>
