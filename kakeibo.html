@@ -89,6 +89,24 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
 .check-box-wrap.active-adj{background:#FFF8EC;border-color:var(--orange)}
 .check-box-wrap.active-split{background:#EEF0FB;border-color:#7F77DD}
 .check-row label{font-size:13px;color:var(--text2);margin:0;cursor:pointer;font-weight:400}
+
+/* ===== トグルスイッチ（割り勘・調整） ===== */
+.tg{border:1px solid var(--border);border-radius:11px;padding:12px 14px;margin-bottom:8px;cursor:pointer;background:var(--bg);display:flex;align-items:center;justify-content:space-between;gap:12px;transition:background .2s,border-color .2s;user-select:none;-webkit-tap-highlight-color:transparent}
+.tg-main{display:flex;align-items:center;gap:10px;min-width:0}
+.tg-emoji{font-size:18px;flex-shrink:0}
+.tg-texts{min-width:0}
+.tg-label{font-size:14px;font-weight:600;line-height:1.2;color:var(--text)}
+.tg-sub{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.2}
+.sw{width:46px;height:28px;border-radius:14px;background:#D4D2CC;flex-shrink:0;position:relative;transition:background .25s cubic-bezier(.4,0,.2,1)}
+.sw-knob{width:22px;height:22px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left .25s cubic-bezier(.4,0,.2,1),width .15s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.tg.on.split{background:var(--purple-bg);border-color:var(--purple)}
+.tg.on.adj{background:#FFF8EC;border-color:var(--orange)}
+.tg.on.split .sw{background:var(--purple)}
+.tg.on.adj .sw{background:var(--orange)}
+.tg.on .sw-knob{left:21px}
+.tg:active .sw-knob{width:26px}
+.tg:active.on .sw-knob{left:17px}
+  
 .tx-item{display:flex;align-items:center;gap:10px;padding:.65rem 0;border-bottom:1px solid var(--border);cursor:pointer}
 .tx-item:last-child{border-bottom:none}
 .tx-item:active{opacity:.7}
@@ -137,6 +155,51 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
 .modal-close{font-size:20px;cursor:pointer;color:var(--text2);background:none;border:none;font-family:inherit}
 .prov-chip{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:3px 7px;font-size:10px;cursor:pointer;font-family:inherit;color:var(--text2)}
 .prov-chip:active{background:var(--hdr);color:#fff}
+
+/* ===== 割り勘帳票 ===== */
+#reportOverlay{position:fixed;inset:0;background:#ddd;z-index:2000;overflow-y:auto;padding:20px;display:none}
+.report{background:#fff;max-width:640px;margin:0 auto 20px;padding:30px 34px;box-shadow:0 4px 24px rgba(0,0,0,.12);border-radius:8px}
+.rep-head-split{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:16px;border-bottom:2px solid var(--text);margin-bottom:22px}
+.rep-logo{display:inline-flex;align-items:flex-end;gap:8px}
+.rep-logo-yen{position:relative;font-size:20px;font-weight:800;color:var(--text);line-height:1;padding-bottom:4px}
+.rep-logo-yen::after{content:'';position:absolute;left:0;right:2px;bottom:0;height:2.5px;background:#C8A24A;border-radius:2px}
+.rep-logo-word{font-size:20px;font-weight:700;letter-spacing:.5px;color:var(--text)}
+.rep-period{font-size:20px;font-weight:800;text-align:right}
+.rep-hero{border-radius:14px;padding:24px;text-align:center;margin-bottom:24px}
+.rep-hero.receive{background:var(--green-bg);border:2px solid var(--green)}
+.rep-hero.pay{background:var(--red-bg);border:2px solid var(--red)}
+.rep-hero.even{background:var(--bg);border:2px solid var(--border)}
+.rep-hero-label{font-size:13px;font-weight:600;margin-bottom:6px}
+.rep-hero.receive .rep-hero-label{color:var(--green-dark)}
+.rep-hero.pay .rep-hero-label{color:var(--red-dark)}
+.rep-hero-amount{font-size:40px;font-weight:800;letter-spacing:-1px;line-height:1}
+.rep-hero.receive .rep-hero-amount{color:var(--green-dark)}
+.rep-hero.pay .rep-hero-amount{color:var(--red-dark)}
+.rep-sec{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:1.5px;text-transform:uppercase;margin:22px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.rep-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.rep-tbl th{text-align:left;padding:7px 9px;background:var(--bg);color:var(--text2);font-weight:600;font-size:11px;border-bottom:2px solid var(--border)}
+.rep-tbl th.num{text-align:right}
+.rep-tbl td{padding:8px 9px;border-bottom:1px solid var(--border);vertical-align:top}
+.rep-tbl td.num{text-align:right;font-weight:600;white-space:nowrap}
+.rep-item-name{font-weight:600}
+.rep-item-logic{font-size:10px;color:var(--purple);margin-top:2px}
+.rep-pay-badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700}
+.rep-pay-me{background:#EEF0FB;color:#4845A8}
+.rep-pay-her{background:#FBF0F5;color:#8C2E5C}
+.rep-summary{background:var(--bg);border-radius:12px;padding:14px 16px;margin-top:6px}
+.rep-sum-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:var(--text2)}
+.rep-sum-row .val{font-weight:700;color:var(--text)}
+.rep-sum-row.total{border-top:2px solid var(--text);margin-top:6px;padding-top:11px;font-size:15px}
+.rep-sum-row.total .val{font-size:20px}
+.rep-foot{margin-top:24px;padding-top:12px;border-top:1px solid var(--border);text-align:center;font-size:11px;color:var(--text3)}
+.rep-actions{max-width:640px;margin:0 auto 16px;display:flex;gap:8px}
+@media print{
+  #reportOverlay{position:static;background:#fff;padding:0;overflow:visible}
+  .report{box-shadow:none;border-radius:0;max-width:100%;margin:0;padding:16px}
+  .rep-actions{display:none!important}
+  body>.container{display:none!important}
+}
+  
 @media print{body{background:#fff}.no-print{display:none!important}.container{max-width:100%;padding:0}.card{border:1px solid #ccc;break-inside:avoid}}
 </style>
 </head>
@@ -211,28 +274,21 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
       </div>
       <div class="form-row full">
         <label>備考（任意）</label>
-        <textarea id="note" placeholder="負担率変更の理由など"></textarea>
+        <textarea id="note" placeholder="負担率変更の理由など・#タグ で分類"></textarea>
+        <div id="tagChips" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px"></div>
       </div>
-      <div id="adjSection" style="display:none">
-        <div class="check-box-wrap" id="adjWrap" onclick="document.getElementById('isAdj').click()">
-          <div class="check-row" style="margin-bottom:0">
-            <input type="checkbox" id="isAdj" onchange="onAdjChange()" onclick="event.stopPropagation()">
-            <label for="isAdj" onclick="event.preventDefault()">🔧 調整対象（割り勘済み費用の自己使用分など）</label>
-          </div>
-        </div>
-        <div id="adjRateSection" style="display:none;margin-bottom:8px">
-          <div class="form-row" style="margin-bottom:4px">
-            <div><label>自分の負担率（%）</label><input type="number" id="adjRate" min="0" max="100" placeholder="50" inputmode="numeric" oninput="updateAdjPreview()"></div>
-            <div style="display:flex;align-items:flex-end"><div id="adjPreview" style="font-size:12px;color:var(--text3);padding-bottom:10px">-</div></div>
-          </div>
-        </div>
-      </div>
+      <!-- 割り勘（上に移動） -->
       <div id="splitSection" style="display:none">
-        <div class="check-box-wrap" id="splitWrap" onclick="document.getElementById('isSplit').click()">
-          <div class="check-row" style="margin-bottom:0">
-            <input type="checkbox" id="isSplit" onchange="toggleSplitOptions()" onclick="event.stopPropagation()">
-            <label for="isSplit" onclick="event.preventDefault()">👫 割り勘対象にする</label>
+        <div class="tg split" id="splitWrap" onclick="document.getElementById('isSplit').click()">
+          <div class="tg-main">
+            <span class="tg-emoji">👫</span>
+            <div class="tg-texts">
+              <div class="tg-label">割り勘対象</div>
+              <div class="tg-sub" id="splitSub">パートナーと分担しない</div>
+            </div>
           </div>
+          <div class="sw"><div class="sw-knob"></div></div>
+          <input type="checkbox" id="isSplit" onchange="toggleSplitOptions()" onclick="event.stopPropagation()" style="display:none">
         </div>
         <div id="splitOptions" style="display:none">
           <div class="section-title" style="margin-bottom:6px">誰が払った？</div>
@@ -240,9 +296,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
             <button class="toggle-btn active me" id="btn-me" onclick="setPayer('me')">自分が払った</button>
             <button class="toggle-btn her" id="btn-her" onclick="setPayer('her')">相手が払った</button>
           </div>
-          <div class="toggle" style="margin-bottom:8px">
-            <button class="toggle-btn active sel" id="mode-rate" onclick="setShareMode('rate')">比率で入力</button>
-            <button class="toggle-btn" id="mode-diff" onclick="setShareMode('diff')">差額で入力</button>
+          <div class="toggle" style="margin-bottom:8px;grid-template-columns:1fr 1fr 1fr">
+            <button class="toggle-btn active sel" id="mode-rate" onclick="setShareMode('rate')">比率</button>
+            <button class="toggle-btn" id="mode-diff" onclick="setShareMode('diff')">差額</button>
+            <button class="toggle-btn" id="mode-amount" onclick="setShareMode('amount')">金額</button>
           </div>
           <div id="share-rate-input">
             <div class="form-row" style="margin-bottom:4px">
@@ -261,7 +318,38 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
               <div><label>差額（円）</label><input type="number" id="diffAmt" min="0" placeholder="0" inputmode="numeric" oninput="onDiffInput()"></div>
             </div>
           </div>
+          <div id="share-amount-input" style="display:none">
+            <div class="form-row" style="margin-bottom:4px">
+              <div><label>入力する人</label>
+                <select id="amountWho" onchange="onAmountShareInput()">
+                  <option value="me">自分の負担額</option>
+                  <option value="her">相手の負担額</option>
+                </select>
+              </div>
+              <div><label>負担額（円）</label><input type="number" id="amountShare" min="0" placeholder="0" inputmode="numeric" oninput="onAmountShareInput()"></div>
+            </div>
+          </div>
           <div style="font-size:11px;color:var(--text3);margin-bottom:6px" id="sharePreview"></div>
+        </div>
+      </div>
+      <!-- 調整（下に移動） -->
+      <div id="adjSection" style="display:none">
+        <div class="tg adj" id="adjWrap" onclick="document.getElementById('isAdj').click()">
+          <div class="tg-main">
+            <span class="tg-emoji">🔧</span>
+            <div class="tg-texts">
+              <div class="tg-label">調整対象</div>
+              <div class="tg-sub" id="adjSub">割り勘済み費用の自己使用分</div>
+            </div>
+          </div>
+          <div class="sw"><div class="sw-knob"></div></div>
+          <input type="checkbox" id="isAdj" onchange="onAdjChange()" onclick="event.stopPropagation()" style="display:none">
+        </div>
+        <div id="adjRateSection" style="display:none;margin-bottom:8px">
+          <div class="form-row" style="margin-bottom:4px">
+            <div><label>自分の負担率（%）</label><input type="number" id="adjRate" min="0" max="100" placeholder="50" inputmode="numeric" oninput="updateAdjPreview()"></div>
+            <div style="display:flex;align-items:flex-end"><div id="adjPreview" style="font-size:12px;color:var(--text3);padding-bottom:10px">-</div></div>
+          </div>
         </div>
       </div>
       <button class="btn primary" onclick="addTransaction()">記録する</button>
@@ -289,6 +377,44 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
         <button class="btn" onclick="clearHistFilters()" style="padding:8px;font-size:12px;margin:0">クリア</button>
       </div>
       <div id="histFilterSummary" style="font-size:11px;color:var(--text2);margin-top:8px;display:none"></div>
+
+      <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px">
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;margin-bottom:8px">
+          <label style="margin:0;white-space:nowrap">📅 期間</label>
+          <select id="histPeriod" onchange="onHistPeriodChange()">
+            <option value="">月表示（通常）</option>
+            <option value="thismonth">今月</option>
+            <option value="lastmonth">先月</option>
+            <option value="thisyear">今年</option>
+            <option value="last3">過去3ヶ月</option>
+            <option value="last6">過去6ヶ月</option>
+            <option value="all">全期間</option>
+            <option value="custom">カスタム</option>
+          </select>
+        </div>
+        <div id="histCustomRange" style="display:none;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;margin-bottom:8px">
+          <input type="month" id="histFrom" onchange="renderHistory()">
+          <span style="font-size:12px;color:var(--text2)">〜</span>
+          <input type="month" id="histTo" onchange="renderHistory()">
+        </div>
+        <div style="display:grid;grid-template-columns:auto 1fr auto 1fr;gap:6px;align-items:center;margin-bottom:8px">
+          <label style="margin:0;white-space:nowrap">💰 金額</label>
+          <input type="number" id="histMin" placeholder="下限" inputmode="numeric" oninput="renderHistory()" style="padding:7px 9px">
+          <span style="font-size:12px;color:var(--text2)">〜</span>
+          <input type="number" id="histMax" placeholder="上限" inputmode="numeric" oninput="renderHistory()" style="padding:7px 9px">
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <label style="margin:0;white-space:nowrap">並び</label>
+          <select id="histSort" onchange="renderHistory()" style="flex:1">
+            <option value="date_desc">日付（新しい順）</option>
+            <option value="date_asc">日付（古い順）</option>
+            <option value="amount_desc">金額（大きい順）</option>
+            <option value="amount_asc">金額（小さい順）</option>
+            <option value="category">カテゴリ順</option>
+          </select>
+        </div>
+      </div>
+          
     </div>
     <div class="toggle" style="margin-bottom:.75rem">
       <button class="toggle-btn active sel" id="hist-btn-all" onclick="setHistMode('all')">全体</button>
@@ -337,7 +463,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
   <div id="page-split" class="page">
     <div id="splitResult"></div>
     <div class="card"><div class="section-title">今月の割り勘明細</div><div id="splitList"><div class="empty">割り勘の記録がありません</div></div></div>
-    <button class="btn no-print" style="background:#F0F4FB;color:var(--blue);border-color:var(--blue)" onclick="window.print()">&#128424;&#65039; PDF出力</button>
+       <button class="btn no-print" style="background:#F0F4FB;color:var(--blue);border-color:var(--blue)" onclick="openReport()">&#128424;&#65039; 精算書を作成（PDF）</button>
   </div>
   <div id="page-budget" class="page">
     <div class="metric-grid" id="budgetSummary" style="padding:0 0 .75rem"></div>
@@ -367,6 +493,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
     <div class="card"><div class="section-title">累積収支グラフ</div><div style="position:relative;height:180px"><canvas id="cumulChart"></canvas></div></div>
   </div>
   <div id="page-fixed" class="page">
+    <div class="metric-grid" id="fixedAnalysis" style="padding:0 0 .75rem"></div>
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
         <div class="section-title" style="margin:0">&#128204; 固定費・サブスク一覧</div>
@@ -380,7 +507,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
       <div class="section-title" id="fixedFormTitle">固定費を追加</div>
       <div class="form-row">
         <div><label>名前</label><input type="text" id="fixedName" placeholder="例：Netflix、家賃"></div>
-        <div><label>金額（円/月）</label><input type="number" id="fixedAmount" inputmode="numeric" placeholder="0"></div>
+        <div><label id="fixedAmountLabel">金額（円/月）</label><input type="number" id="fixedAmount" inputmode="numeric" placeholder="0"></div>
       </div>
       <div class="form-row">
         <div><label>カテゴリ</label>
@@ -388,13 +515,30 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
             <option>📱 通信・サブスク</option><option>🏠 住居</option><option>💡 光熱費</option><option>🛡 保険</option><option>🚗 自動車</option><option>🎮 娯楽・サービス</option><option>💊 医療・健康</option><option>📚 教育・学習</option><option>🤝 その他</option>
           </select>
         </div>
-        <div><label>支払日</label><input type="text" id="fixedBillingDay" placeholder="例：1、15"></div>
+      　<div><label>支払日</label><input type="text" id="fixedBillingDay" placeholder="例：1、15"></div>
+      </div>
+      <div class="form-row">
+        <div><label>開始年月</label><input type="month" id="fixedStartYm"></div>
+        <div style="display:flex;align-items:flex-end"><div style="font-size:11px;color:var(--text3);padding-bottom:10px">この月以降に計上</div></div>
       </div>
       <div class="form-row full">
         <div><label>計上モード</label>
           <select id="fixedMode">
             <option value="remind">🔔 リマインド（実額を毎月入力・準固定向け）</option>
             <option value="auto">⚡ 自動計上（登録額そのまま・完全固定向け）</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div><label>支払周期</label>
+          <select id="fixedCycle" onchange="onFixedCycleChange()">
+            <option value="monthly">毎月</option>
+            <option value="yearly">年払い</option>
+          </select>
+        </div>
+        <div id="fixedPayMonthWrap" style="display:none"><label>支払月</label>
+          <select id="fixedPayMonth">
+            <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
           </select>
         </div>
       </div>
@@ -496,26 +640,29 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
       <div><label>メモ</label><input type="text" id="edit-memo" list="memoSuggest" autocomplete="off"></div>
     </div>
     <div class="form-row full"><label>備考</label><textarea id="edit-note"></textarea></div>
-    <div id="edit-adjSection" style="display:none">
-      <div class="check-row"><input type="checkbox" id="edit-isAdj" onchange="editOnAdjChange()"><label for="edit-isAdj">調整対象</label></div>
-      <div id="edit-adjRateSection" style="display:none;margin-bottom:8px">
-        <div class="form-row" style="margin-bottom:4px">
-          <div><label>自分の負担率（%）</label><input type="number" id="edit-adjRate" min="0" max="100" inputmode="numeric" oninput="editUpdateAdjPreview()"></div>
-          <div style="display:flex;align-items:flex-end"><div id="edit-adjPreview" style="font-size:12px;color:var(--text3);padding-bottom:10px">-</div></div>
-        </div>
-      </div>
-    </div>
+
     <div id="edit-splitSection" style="display:none">
-      <div class="check-row"><input type="checkbox" id="edit-isSplit" onchange="editToggleSplit()"><label for="edit-isSplit">割り勘対象にする</label></div>
+      <div class="tg split" id="edit-splitWrap" onclick="document.getElementById('edit-isSplit').click()">
+        <div class="tg-main">
+          <span class="tg-emoji">👫</span>
+          <div class="tg-texts">
+            <div class="tg-label">割り勘対象</div>
+            <div class="tg-sub" id="edit-splitSub">パートナーと分担しない</div>
+          </div>
+        </div>
+        <div class="sw"><div class="sw-knob"></div></div>
+        <input type="checkbox" id="edit-isSplit" onchange="editToggleSplit()" style="display:none">
+      </div>
       <div id="edit-splitOptions" style="display:none">
         <div class="section-title" style="margin-bottom:6px">誰が払った？</div>
         <div class="toggle">
           <button class="toggle-btn active me" id="edit-btn-me" onclick="editSetPayer('me')">自分が払った</button>
           <button class="toggle-btn her" id="edit-btn-her" onclick="editSetPayer('her')">相手が払った</button>
         </div>
-        <div class="toggle" style="margin-bottom:8px">
-          <button class="toggle-btn active sel" id="edit-mode-rate" onclick="editSetShareMode('rate')">比率で入力</button>
-          <button class="toggle-btn" id="edit-mode-diff" onclick="editSetShareMode('diff')">差額で入力</button>
+        <div class="toggle" style="margin-bottom:8px;grid-template-columns:1fr 1fr 1fr">
+          <button class="toggle-btn active sel" id="edit-mode-rate" onclick="editSetShareMode('rate')">比率</button>
+          <button class="toggle-btn" id="edit-mode-diff" onclick="editSetShareMode('diff')">差額</button>
+          <button class="toggle-btn" id="edit-mode-amount" onclick="editSetShareMode('amount')">金額</button>
         </div>
         <div id="edit-share-rate-input">
           <div class="form-row" style="margin-bottom:4px">
@@ -533,13 +680,55 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
             <div><label>差額（円）</label><input type="number" id="edit-diffAmt" min="0" placeholder="0" inputmode="numeric" oninput="editOnDiffInput()"></div>
           </div>
         </div>
+
+        <div id="edit-share-amount-input" style="display:none">
+          <div class="form-row" style="margin-bottom:4px">
+            <div><label>入力する人</label>
+              <select id="edit-amountWho" onchange="editOnAmountShareInput()">
+                <option value="me">自分の負担額</option><option value="her">相手の負担額</option>
+              </select>
+            </div>
+            <div><label>負担額（円）</label><input type="number" id="edit-amountShare" min="0" placeholder="0" inputmode="numeric" oninput="editOnAmountShareInput()"></div>
+          </div>
+        </div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:6px" id="edit-sharePreview"></div>
       </div>
     </div>
+
+       <div id="edit-adjSection" style="display:none">
+      <div class="tg adj" id="edit-adjWrap" onclick="document.getElementById('edit-isAdj').click()">
+        <div class="tg-main">
+          <span class="tg-emoji">🔧</span>
+          <div class="tg-texts">
+            <div class="tg-label">調整対象</div>
+            <div class="tg-sub" id="edit-adjSub">割り勘済み費用の自己使用分</div>
+          </div>
+        </div>
+        <div class="sw"><div class="sw-knob"></div></div>
+        <input type="checkbox" id="edit-isAdj" onchange="editOnAdjChange()" style="display:none">
+      </div>
+
+      <div id="edit-adjRateSection" style="display:none;margin-bottom:8px">
+        <div class="form-row" style="margin-bottom:4px">
+          <div><label>自分の負担率（%）</label><input type="number" id="edit-adjRate" min="0" max="100" inputmode="numeric" oninput="editUpdateAdjPreview()"></div>
+          <div style="display:flex;align-items:flex-end"><div id="edit-adjPreview" style="font-size:12px;color:var(--text3);padding-bottom:10px">-</div></div>
+        </div>
+      </div>
+    </div>
+    
     <button class="btn primary" onclick="saveEdit()">保存する</button>
     <button class="btn danger" style="margin-top:8px" onclick="deleteTransaction()">この取引を削除する</button>
   </div>
 </div>
+
+<div id="reportOverlay">
+  <div class="rep-actions no-print">
+  <button class="btn" onclick="closeReport()" style="flex:1">閉じる</button>
+  <button class="btn primary" onclick="window.print()" style="flex:2;margin-top:0">🖨️ 印刷 / PDF保存</button>
+  </div>
+  <div id="reportBody"></div>
+</div>
+  
 <script>
 /* ===== テスト環境判定 ===== */
 const IS_TEST = window.location.pathname.includes('kakeibo-test') || window.location.pathname.includes('kakeibo2');
@@ -627,7 +816,7 @@ async function cloudPull(){
       localStorage.setItem(SP+'kakeibo_updatedAt',String(data.updatedAt));
       if(data.budgets) restoreAllBudgets(data.budgets);
       postProvisional(viewYear,viewMonth);
-      updateHeader();renderHistory();renderSplit();renderReviews();updateFixedReminders();updateMemoSuggestions();
+      updateHeader();renderHistory();renderSplit();renderReviews();updateFixedReminders();updateMemoSuggestions();renderTagChips();
       showSyncStatus('☁️ クラウドから復元しました');
     }else{showSyncStatus('☁️ 同期済み');}
   }catch(e){showSyncStatus('⚠️ クラウド接続失敗（ローカルで動作中）','var(--text2)');}
@@ -652,6 +841,8 @@ function postProvisional(y, m){
   let added=0;
   fixed.forEach(f=>{
     if(f.mode!==FIXED_MODE_REMIND&&f.mode!==FIXED_MODE_AUTO) return;
+    if(f.startYm && ym < f.startYm) return;
+    if(f.cycle==='yearly' && (m+1)!==(f.payMonth||1)) return;
     if((f.skippedYM||[]).includes(ym)) return;
     const ref=fixedRefKey(f);
     if(isAlreadyPosted(ref,y,m)) return;
@@ -801,38 +992,71 @@ function updateHeader(){
 function changeMonth(d){viewMonth+=d;if(viewMonth<0){viewMonth=11;viewYear--;}if(viewMonth>11){viewMonth=0;viewYear++;}postProvisional(viewYear,viewMonth);updateHeader();renderHistory();renderSplit();renderReviews();updateFixedReminders();const sub=document.getElementById('stab-me').classList.contains('active')?'me':'couple';renderCharts(sub);}
 function setType(t){txType=t;document.getElementById('btn-income').className='toggle-btn'+(t==='income'?' active income':'');document.getElementById('btn-expense').className='toggle-btn'+(t==='expense'?' active expense':'');document.getElementById('adjSection').style.display=t==='expense'?'':'none';document.getElementById('splitSection').style.display=t==='expense'?'':'none';buildCatOptions(document.getElementById('category'),t);if(t==='expense') applyDefaultRate();}
 function setPayer(p){splitPayer=p;document.getElementById('btn-me').className='toggle-btn'+(p==='me'?' active me':'');document.getElementById('btn-her').className='toggle-btn'+(p==='her'?' active her':'');updateSharePreview();}
-function setShareMode(m){shareMode=m;document.getElementById('mode-rate').className='toggle-btn'+(m==='rate'?' active sel':'');document.getElementById('mode-diff').className='toggle-btn'+(m==='diff'?' active sel':'');document.getElementById('share-rate-input').style.display=m==='rate'?'':'none';document.getElementById('share-diff-input').style.display=m==='diff'?'':'none';updateSharePreview();}
-function toggleSplitOptions(){const checked=document.getElementById('isSplit').checked;document.getElementById('splitOptions').style.display=checked?'':'none';document.getElementById('splitWrap').className='check-box-wrap'+(checked?' active-split':'');if(checked){document.getElementById('isAdj').checked=false;document.getElementById('adjRateSection').style.display='none';document.getElementById('adjWrap').className='check-box-wrap';}updateSharePreview();}
-function onAdjChange(){const checked=document.getElementById('isAdj').checked;document.getElementById('adjRateSection').style.display=checked?'':'none';document.getElementById('adjWrap').className='check-box-wrap'+(checked?' active-adj':'');if(checked){document.getElementById('isSplit').checked=false;document.getElementById('splitOptions').style.display='none';document.getElementById('splitWrap').className='check-box-wrap';}updateAdjPreview();}
+function setShareMode(m){shareMode=m;document.getElementById('mode-rate').className='toggle-btn'+(m==='rate'?' active sel':'');document.getElementById('mode-diff').className='toggle-btn'+(m==='diff'?' active sel':'');document.getElementById('mode-amount').className='toggle-btn'+(m==='amount'?' active sel':'');document.getElementById('share-rate-input').style.display=m==='rate'?'':'none';document.getElementById('share-diff-input').style.display=m==='diff'?'':'none';document.getElementById('share-amount-input').style.display=m==='amount'?'':'none';updateSharePreview();}
+function onAmountShareInput(){updateSharePreview();}
+function calcSharesByAmount(amount, inputShare, who){
+  let myShare,herShare;
+  if(who==='me'){myShare=Math.min(inputShare,amount);herShare=amount-myShare;}
+  else{herShare=Math.min(inputShare,amount);myShare=amount-herShare;}
+  return {myShare,herShare,myRate:amount>0?Math.round(myShare/amount*100):50};
+}
+function toggleSplitOptions(){const checked=document.getElementById('isSplit').checked;document.getElementById('splitOptions').style.display=checked?'':'none';document.getElementById('splitWrap').className='tg split'+(checked?' on':'');document.getElementById('splitSub').textContent=checked?'パートナーと分担する':'パートナーと分担しない';if(checked){document.getElementById('isAdj').checked=false;document.getElementById('adjRateSection').style.display='none';document.getElementById('adjWrap').className='tg adj';document.getElementById('adjSub').textContent='割り勘済み費用の自己使用分';}updateSharePreview();}
+function onAdjChange(){const checked=document.getElementById('isAdj').checked;document.getElementById('adjRateSection').style.display=checked?'':'none';document.getElementById('adjWrap').className='tg adj'+(checked?' on':'');document.getElementById('adjSub').textContent=checked?'調整を適用する':'割り勘済み費用の自己使用分';if(checked){document.getElementById('isSplit').checked=false;document.getElementById('splitOptions').style.display='none';document.getElementById('splitWrap').className='tg split';document.getElementById('splitSub').textContent='パートナーと分担しない';}updateAdjPreview();}
 function applyDefaultRate(){const cat=document.getElementById('category').value;const rate=catRates[cat]??50;document.getElementById('myRate').value=rate;document.getElementById('herRateDisp').textContent=(100-rate)+'%';updateSharePreview();}
 function onCategoryChange(){if(txType==='expense') applyDefaultRate();}
 function onAmountInput(){updateSharePreview();updateAdjPreview();}
 function onRateInput(){const v=parseInt(document.getElementById('myRate').value)||0;document.getElementById('herRateDisp').textContent=(100-v)+'%';updateSharePreview();}
 function onDiffInput(){updateSharePreview();}
 function updateAdjPreview(){const amt=parseFloat(document.getElementById('amount').value)||0;const rate=parseInt(document.getElementById('adjRate').value)||50;const prev=document.getElementById('adjPreview');if(!document.getElementById('isAdj').checked||!amt){prev.textContent='-';return;}prev.textContent=`自分+${fmt(Math.ceil(amt*rate/100))} / ${partnerName}-${fmt(Math.floor(amt*(100-rate)/100))}`;}
-function updateSharePreview(){const amt=parseFloat(document.getElementById('amount').value)||0;const el=document.getElementById('sharePreview');if(!amt||!document.getElementById('isSplit').checked){el.textContent='';return;}let myShare,herShare;if(shareMode==='rate'){const rate=parseInt(document.getElementById('myRate').value)||50;({myShare,herShare}=calcShares(amt,rate,splitPayer));}else{const dw=document.getElementById('diffWho').value;const da=parseFloat(document.getElementById('diffAmt').value)||0;({myShare,herShare}=calcSharesByDiff(amt,da,dw,splitPayer));}el.textContent=`自分 ${fmt(myShare)} / ${partnerName} ${fmt(herShare)}`;}
+function updateSharePreview(){const amt=parseFloat(document.getElementById('amount').value)||0;const el=document.getElementById('sharePreview');if(!amt||!document.getElementById('isSplit').checked){el.textContent='';return;}let myShare,herShare;if(shareMode==='rate'){const rate=parseInt(document.getElementById('myRate').value)||50;({myShare,herShare}=calcShares(amt,rate,splitPayer));}else if(shareMode==='diff'){const dw=document.getElementById('diffWho').value;const da=parseFloat(document.getElementById('diffAmt').value)||0;({myShare,herShare}=calcSharesByDiff(amt,da,dw,splitPayer));}else{const aw=document.getElementById('amountWho').value;const av=parseFloat(document.getElementById('amountShare').value)||0;({myShare,herShare}=calcSharesByAmount(amt,av,aw));}el.textContent=`自分 ${fmt(myShare)} / ${partnerName} ${fmt(herShare)}`;}
 function addTransaction(){
   const amount=parseFloat(document.getElementById('amount').value);
   if(!amount||amount<=0){alert('金額を入力してください');return;}
   const isAdj=document.getElementById('isAdj').checked&&txType==='expense';
   const isSplit=!isAdj&&document.getElementById('isSplit').checked&&txType==='expense';
   let myShare=null,herShare=null,myRate=null;
-  if(isSplit){if(shareMode==='rate'){myRate=parseInt(document.getElementById('myRate').value)||50;({myShare,herShare}=calcShares(amount,myRate,splitPayer));}else{const dw=document.getElementById('diffWho').value;const da=parseFloat(document.getElementById('diffAmt').value)||0;({myShare,herShare,myRate}=calcSharesByDiff(amount,da,dw,splitPayer));}}
+  if(isSplit){if(shareMode==='rate'){myRate=parseInt(document.getElementById('myRate').value)||50;({myShare,herShare}=calcShares(amount,myRate,splitPayer));}else if(shareMode==='diff'){const dw=document.getElementById('diffWho').value;const da=parseFloat(document.getElementById('diffAmt').value)||0;({myShare,herShare,myRate}=calcSharesByDiff(amount,da,dw,splitPayer));}else{const aw=document.getElementById('amountWho').value;const av=parseFloat(document.getElementById('amountShare').value)||0;({myShare,herShare,myRate}=calcSharesByAmount(amount,av,aw));}}
   if(isAdj){myRate=parseInt(document.getElementById('adjRate').value)||50;myShare=Math.ceil(amount*myRate/100);herShare=Math.floor(amount*(100-myRate)/100);}
-  transactions.push({id:Date.now(),type:txType,amount,category:document.getElementById('category').value,date:document.getElementById('txdate').value,memo:document.getElementById('memo').value||document.getElementById('category').value,note:document.getElementById('note').value,isSplit,isAdj,payer:isSplit?splitPayer:null,myShare,herShare,myRate});
-  save();
+  transactions.push({id:Date.now(),type:txType,amount,category:document.getElementById('category').value,date:document.getElementById('txdate').value,memo:document.getElementById('memo').value||document.getElementById('category').value,note:document.getElementById('note').value,isSplit,isAdj,payer:isSplit?splitPayer:null,myShare,herShare,myRate,shareMode:isSplit?shareMode:null,diffAmt:(isSplit&&shareMode==='diff')?(parseFloat(document.getElementById('diffAmt').value)||0):null,diffWho:(isSplit&&shareMode==='diff')?document.getElementById('diffWho').value:null,amountShare:(isSplit&&shareMode==='amount')?(parseFloat(document.getElementById('amountShare').value)||0):null,amountWho:(isSplit&&shareMode==='amount')?document.getElementById('amountWho').value:null});  save();
   document.getElementById('amount').value='';
   document.getElementById('memo').value='';
   document.getElementById('note').value='';
   document.getElementById('isSplit').checked=false;
   document.getElementById('isAdj').checked=false;
   document.getElementById('splitOptions').style.display='none';
+  document.getElementById('splitWrap').className='tg split';
+  document.getElementById('splitSub').textContent='パートナーと分担しない';
   document.getElementById('adjRateSection').style.display='none';
+  document.getElementById('adjWrap').className='tg adj';
+  document.getElementById('adjSub').textContent='割り勘済み費用の自己使用分';
   document.getElementById('sharePreview').textContent='';
+  document.getElementById('diffAmt').value='';
+  document.getElementById('diffWho').value='me';
+  document.getElementById('amountShare').value='';
+  document.getElementById('amountWho').value='me';
+  document.getElementById('adjRate').value='';
   setPayer('me');
-  updateHeader();renderHistory();renderSplit();renderReviews();updateMemoSuggestions();switchTab('history');
+  setShareMode('rate');
+    updateHeader();renderHistory();renderSplit();renderReviews();updateMemoSuggestions();renderTagChips();
+  showSyncStatus('✅ 記録しました '+new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}),'var(--green-dark)');
+  document.getElementById('amount').focus();
 }
 function setHistMode(m){histMode=m;document.getElementById('hist-btn-all').className='toggle-btn'+(m==='all'?' active sel':'');document.getElementById('hist-btn-my').className='toggle-btn'+(m==='my'?' active sel':'');document.getElementById('histSummaryCard').style.display=m==='my'?'':'none';renderHistory();}
+
+function shareModeLabel(t){
+  if(!t.isSplit) return '';
+  const mode=t.shareMode||'rate';
+  if(mode==='diff'){
+    const who=t.diffWho==='me'?myName:partnerName;
+    return `差額入力 ${who}が${fmt(t.diffAmt||0)}多く負担`;
+  }
+  if(mode==='amount'){
+    return `金額入力 ${myName}${fmt(t.myShare||0)}/${partnerName}${fmt(t.herShare||0)}`;
+  }
+  const r=t.myRate??50;
+  return `比率入力 ${r}%:${100-r}%`;
+}
+  
 function buildHistCatFilter(){
   const sel=document.getElementById('histFilterCat');
   if(!sel||sel.dataset.built) return;
@@ -842,9 +1066,47 @@ function buildHistCatFilter(){
 }
 function clearHistFilters(){
   const s=document.getElementById('histSearch');if(s) s.value='';
-  ['histFilterType','histFilterCat','histFilterPayer'].forEach(id=>{const el=document.getElementById(id);if(el) el.value='';});
+  ['histFilterType','histFilterCat','histFilterPayer','histPeriod','histSort','histMin','histMax','histFrom','histTo'].forEach(id=>{const el=document.getElementById(id);if(el){if(id==='histSort') el.value='date_desc';else el.value='';}});
+  onHistPeriodChange();
+}
+
+function onHistPeriodChange(){
+  const p=document.getElementById('histPeriod').value;
+  document.getElementById('histCustomRange').style.display=p==='custom'?'grid':'none';
+  // 期間モード時はヘッダー月ナビを無効化
+  const navBtns=document.querySelectorAll('.month-nav .nav-btn');
+  const monthLabel=document.getElementById('monthLabel');
+  if(p){
+    navBtns.forEach(b=>{b.style.opacity='.3';b.style.pointerEvents='none';});
+    if(monthLabel) monthLabel.style.opacity='.4';
+  }else{
+    navBtns.forEach(b=>{b.style.opacity='';b.style.pointerEvents='';});
+    if(monthLabel) monthLabel.style.opacity='';
+  }
   renderHistory();
 }
+// 期間指定に応じた取引リストを返す
+function getHistTargetTx(){
+  const p=document.getElementById('histPeriod')?.value||'';
+  if(!p) return monthTx(); // 通常は表示中の月
+  const now=new Date();
+  let from,to;
+  if(p==='thismonth'){from=new Date(now.getFullYear(),now.getMonth(),1);to=new Date(now.getFullYear(),now.getMonth()+1,0);}
+  else if(p==='lastmonth'){from=new Date(now.getFullYear(),now.getMonth()-1,1);to=new Date(now.getFullYear(),now.getMonth(),0);}
+  else if(p==='thisyear'){from=new Date(now.getFullYear(),0,1);to=new Date(now.getFullYear(),11,31);}
+  else if(p==='last3'){from=new Date(now.getFullYear(),now.getMonth()-2,1);to=new Date(now.getFullYear(),now.getMonth()+1,0);}
+  else if(p==='last6'){from=new Date(now.getFullYear(),now.getMonth()-5,1);to=new Date(now.getFullYear(),now.getMonth()+1,0);}
+  else if(p==='all'){return transactions.slice();}
+  else if(p==='custom'){
+    const f=document.getElementById('histFrom').value;
+    const t=document.getElementById('histTo').value;
+    if(!f&&!t) return transactions.slice();
+    from=f?new Date(f+'-01'):new Date(2000,0,1);
+    to=t?new Date(new Date(t+'-01').getFullYear(),new Date(t+'-01').getMonth()+1,0):new Date(2999,11,31);
+  }
+  return transactions.filter(x=>{const d=new Date(x.date);return d>=from&&d<=to;});
+}
+  
 function applyHistFilters(list){
   const kw=(document.getElementById('histSearch')?.value||'').trim().toLowerCase();
   const fType=document.getElementById('histFilterType')?.value||'';
@@ -853,8 +1115,20 @@ function applyHistFilters(list){
   return list.filter(t=>{
     if(kw){
       const hay=((t.memo||'')+' '+(t.category||'')+' '+(t.note||'')).toLowerCase();
-      if(!hay.includes(kw)) return false;
+      if(kw.startsWith('#')){
+        // タグ検索：完全一致（前後がスペース/文字列端/別の#）
+        const tags=(hay.match(/#[^\s#　]+/g)||[]);
+        if(!tags.includes(kw)) return false;
+      }else{
+        // 通常検索：部分一致
+        if(!hay.includes(kw)) return false;
+      }
     }
+
+    const minV=parseFloat(document.getElementById('histMin')?.value)||null;
+    const maxV=parseFloat(document.getElementById('histMax')?.value)||null;
+    if(minV!=null && t.amount<minV) return false;
+    if(maxV!=null && t.amount>maxV) return false;
     if(fType && t.type!==fType) return false;
     if(fCat && t.category!==fCat) return false;
     if(fPayer){
@@ -867,24 +1141,48 @@ function applyHistFilters(list){
     return true;
   });
 }
+
+
 function renderHistory(){
   buildHistCatFilter();
-  let tx=monthTx().slice().sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
+  let tx=getHistTargetTx().slice();
   tx=applyHistFilters(tx);
+  // 並び替え
+  const sort=document.getElementById('histSort')?.value||'date_desc';
+  if(sort==='date_desc') tx.sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+  else if(sort==='date_asc') tx.sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
+  else if(sort==='amount_desc') tx.sort((a,b)=>b.amount-a.amount);
+  else if(sort==='amount_asc') tx.sort((a,b)=>a.amount-b.amount);
+  else if(sort==='category') tx.sort((a,b)=>(a.category||'').localeCompare(b.category||'')||a.date.localeCompare(b.date));
   const el=document.getElementById('txList');
   // フィルタサマリー
   const sumEl=document.getElementById('histFilterSummary');
-  const hasFilter=(document.getElementById('histSearch')?.value||'')||document.getElementById('histFilterType')?.value||document.getElementById('histFilterCat')?.value||document.getElementById('histFilterPayer')?.value;
+  const hasFilter=(document.getElementById('histSearch')?.value||'')||document.getElementById('histFilterType')?.value||document.getElementById('histFilterCat')?.value||document.getElementById('histFilterPayer')?.value||document.getElementById('histPeriod')?.value||document.getElementById('histMin')?.value||document.getElementById('histMax')?.value;  
+  
   if(sumEl){
     if(hasFilter){
       const inc=tx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
       const exp=tx.filter(t=>t.type!=='income').reduce((s,t)=>s+((t.isAdj||t.isSplit)?(t.myShare||0):t.amount),0);
+      const kw=(document.getElementById('histSearch')?.value||'').trim();
+      const isTag=kw.startsWith('#');
       sumEl.style.display='';
-      sumEl.textContent=`${tx.length}件ヒット${inc?' ・収入'+fmt(inc):''}${exp?' ・支出'+fmt(exp):''}`;
+      if(isTag && exp>0){
+        // タグ検索の支出集計を強調
+        const expTx=tx.filter(t=>t.type!=='income');
+        const amounts=expTx.map(t=>(t.isAdj||t.isSplit)?(t.myShare||0):t.amount);
+        const avg=amounts.length?Math.round(exp/amounts.length):0;
+        const max=amounts.length?Math.max(...amounts):0;
+        const maxTx=expTx.find(t=>((t.isAdj||t.isSplit)?(t.myShare||0):t.amount)===max);
+        sumEl.innerHTML=`<div style="background:var(--purple-bg,#EEF0FB);border:1px solid var(--purple);border-radius:8px;padding:8px 10px;color:var(--text)"><div style="font-weight:700;font-size:12px;color:#4845A8">${kw} ・ ${tx.length}件</div><div style="font-size:13px;font-weight:700;margin-top:2px">合計 ${fmt(exp)}</div><div style="font-size:10px;color:var(--text2);margin-top:2px">平均 ${fmt(avg)}${maxTx?' ・ 最大 '+fmt(max)+'（'+maxTx.memo+'）':''}</div></div>`;
+      }else{
+        sumEl.textContent=`${tx.length}件ヒット${inc?' ・収入'+fmt(inc):''}${exp?' ・支出'+fmt(exp):''}`;
+      }
     }else{
       sumEl.style.display='none';
     }
   }
+
+  
   if(histMode==='my'){
     const inc=tx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
     const exp=realExp(tx);const bal=inc-exp;
@@ -914,8 +1212,8 @@ function renderHistory(){
     const sign=t.type==='income'?'+':isAdj?'▲':'-';
     const icon=isAdj?'🔧':(t.isProvisional?'⏳':(t.category?t.category.slice(0,2):'💴'));
     const bg=isAdj?'#FFF8EC':(t.isProvisional?'#FFF0D0':((CAT_COLORS[t.category]||'#888')+'22'));
-    return `<div class="tx-item${t.isProvisional?' provisional':''}" onclick="openEdit(${t.id})"><div class="tx-icon" style="background:${bg}">${icon}</div><div class="tx-info"><div class="tx-memo">${t.memo}${badge}</div><div class="tx-sub">${t.date}${t.category?' · '+t.category:''}${t.note?' · '+t.note.slice(0,20):''}</div></div><div class="tx-amount" style="color:${color}">${sign}${fmt(t.amount)}</div><div style="font-size:13px;color:var(--text3)">›</div></div>`;
-  }).join('');
+    const modeLine=t.isSplit?`<div class="tx-sub" style="color:var(--purple)">${shareModeLabel(t)}</div>`:'';
+    return `<div class="tx-item${t.isProvisional?' provisional':''}" onclick="openEdit(${t.id})"><div class="tx-icon" style="background:${bg}">${icon}</div><div class="tx-info"><div class="tx-memo">${t.memo}${badge}</div><div class="tx-sub">${t.date}${t.category?' · '+t.category:''}${t.note?' · '+t.note.slice(0,20):''}</div>${modeLine}</div><div class="tx-amount" style="color:${color}">${sign}${fmt(t.amount)}</div><div style="font-size:13px;color:var(--text3)">›</div></div>`;  }).join('');
 }
 
 function updateMemoSuggestions(){
@@ -933,6 +1231,35 @@ function updateMemoSuggestions(){
   });
   const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,50).map(x=>x[0]);
   dl.innerHTML=sorted.map(m=>`<option value="${m.replace(/"/g,'&quot;')}"></option>`).join('');
+}
+
+// 全取引からタグ（#で始まる語）を抽出、使用頻度順
+function extractTags(){
+  const freq={};
+  const re=/#[^\s#　]+/g;
+  transactions.forEach(t=>{
+    const text=(t.note||'')+' '+(t.memo||'');
+    const matches=text.match(re);
+    if(matches) matches.forEach(tag=>{freq[tag]=(freq[tag]||0)+1;});
+  });
+  return Object.entries(freq).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+}
+// 入力タブの備考欄下にタグチップを表示
+function renderTagChips(){
+  const el=document.getElementById('tagChips');
+  if(!el) return;
+  const tags=extractTags().slice(0,10);
+  if(!tags.length){el.innerHTML='';return;}
+  el.innerHTML=tags.map(tag=>`<button type="button" class="prov-chip" onclick="insertTag('${tag.replace(/'/g,"\\'")}')">${tag}</button>`).join('');
+}
+// タグを備考欄に挿入
+function insertTag(tag){
+  const ta=document.getElementById('note');
+  const cur=ta.value.trim();
+  // 既に含まれてたら何もしない
+  if(cur.includes(tag)) return;
+  ta.value=(cur?cur+' ':'')+tag;
+  ta.focus();
 }
 
 function renderSplit(){
@@ -958,7 +1285,7 @@ function renderSplit(){
     const rate=t.myRate??50;const herRate=100-rate;
     const shareLabel=t.payer==='me'?`${partnerName}負担`:`${myName}負担`;
     const shareVal=t.payer==='me'?t.herShare:t.myShare;
-    rows+=`<div class="detail-row"><div style="flex:1;min-width:0"><div style="font-size:13px;color:var(--text)">${t.memo}${pb}${t.isProvisional?'<span class="badge badge-prov">仮</span>':''}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${t.date} · 元${fmt(t.amount)} · ${myName}${rate}%:${partnerName}${herRate}%${t.note?' · '+t.note:''}</div></div><div class="dr-right"><div class="dr-main">${shareLabel}: ${fmt(shareVal||0)}</div></div></div>`;
+    rows+=`<div class="detail-row"><div style="flex:1;min-width:0"><div style="font-size:13px;color:var(--text)">${t.memo}${pb}${t.isProvisional?'<span class="badge badge-prov">仮</span>':''}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${t.date} · 元${fmt(t.amount)} · ${shareModeLabel(t)}${t.note?' · '+t.note:''}</div></div><div class="dr-right"><div class="dr-main">${shareLabel}: ${fmt(shareVal||0)}</div></div></div>`;
   });
   adjTx.forEach(t=>{
     const rate=t.myRate??50;
@@ -966,6 +1293,69 @@ function renderSplit(){
   });
   el.innerHTML=rows||'<div class="empty">データなし</div>';
 }
+
+function openReport(){
+  const tx=monthTx();
+  const splitTx=tx.filter(t=>t.isSplit&&t.type==='expense');
+  const adjTx=tx.filter(t=>t.isAdj||t.type==='adjustment');
+  if(!splitTx.length&&!adjTx.length){alert('この月には割り勘の記録がありません');return;}
+  // 精算計算（renderSplitと同じロジック）
+  let herOwesMe=0,iOweHer=0;
+  splitTx.forEach(t=>{if(t.payer==='me') herOwesMe+=t.herShare||0;else iOweHer+=t.myShare||0;});
+  const adjHerSub=adjTx.reduce((s,t)=>s+(t.herShare||0),0);
+  const net=(herOwesMe-adjHerSub)-iOweHer;
+  // ヒーロー
+  let heroClass,heroLabel,heroAmount;
+  if(net>0){heroClass='receive';heroLabel=partnerName+' から受け取る';heroAmount=fmt(net);}
+  else if(net<0){heroClass='pay';heroLabel=myName+' が払う';heroAmount=fmt(-net);}
+  else{heroClass='even';heroLabel='精算なし';heroAmount='¥0';}
+  // 明細行
+  let rows='';
+  splitTx.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(t=>{
+    const payClass=t.payer==='me'?'rep-pay-me':'rep-pay-her';
+    const payLabel=t.payer==='me'?myName+'払い':partnerName+'払い';
+    const shareLabel=t.payer==='me'?partnerName+' '+fmt(t.herShare||0):myName+' '+fmt(t.myShare||0);
+    const d=t.date.slice(5).replace('-','/');
+    rows+=`<tr><td>${d}</td><td><div class="rep-item-name">${t.memo} <span class="rep-pay-badge ${payClass}">${payLabel}</span></div><div class="rep-item-logic">${shareModeLabel(t)}</div></td><td class="num">${fmt(t.amount)}</td><td class="num">${shareLabel}</td></tr>`;
+  });
+  adjTx.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(t=>{
+    const d=t.date.slice(5).replace('-','/');
+    rows+=`<tr><td>${d}</td><td><div class="rep-item-name" style="color:var(--orange)">🔧 ${t.memo}</div><div class="rep-item-logic">調整（${myName}${t.myRate??50}%:${partnerName}${100-(t.myRate??50)}%）</div></td><td class="num">${fmt(t.amount)}</td><td class="num" style="color:var(--orange)">${partnerName} ▲${fmt(t.herShare||0)}</td></tr>`;
+  });
+  // サマリー
+  const adjRow=adjHerSub>0?`<div class="rep-sum-row"><span>調整 差し引き</span><span class="val" style="color:var(--orange)">▲${fmt(adjHerSub)}</span></div>`:'';
+  const totalColor=net>0?'var(--green-dark)':net<0?'var(--red-dark)':'var(--text)';
+  // 帳票組み立て
+  const today=new Date().toISOString().slice(0,10);
+  document.getElementById('reportBody').innerHTML=`
+    <div class="report">
+      <div class="rep-head-split">
+        <div class="rep-logo"><span class="rep-logo-yen">¥</span><span class="rep-logo-word">kakeibo</span></div>
+        <div class="rep-period">${viewYear}年${viewMonth+1}月</div>
+      </div>
+      <div class="rep-hero ${heroClass}">
+        <div class="rep-hero-label">${heroLabel}</div>
+        <div class="rep-hero-amount">${heroAmount}</div>
+      </div>
+      <div class="rep-sec">明細</div>
+      <table class="rep-tbl">
+        <thead><tr><th>日付</th><th>項目</th><th class="num">元金額</th><th class="num">負担額</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="rep-sec">精算内訳</div>
+      <div class="rep-summary">
+        <div class="rep-sum-row"><span>${myName} 立替 → ${partnerName} 負担</span><span class="val">${fmt(herOwesMe)}</span></div>
+        ${adjRow}
+        <div class="rep-sum-row"><span>${partnerName} 立替 → ${myName} 負担</span><span class="val">${fmt(iOweHer)}</span></div>
+        <div class="rep-sum-row total"><span>差引精算額</span><span class="val" style="color:${totalColor}">${heroAmount}</span></div>
+      </div>
+      <div class="rep-foot">作成 ${today}</div>
+    </div>`;
+  document.getElementById('reportOverlay').style.display='block';
+  window.scrollTo(0,0);
+}
+function closeReport(){document.getElementById('reportOverlay').style.display='none';}
+  
 function openEdit(id){
   const t=transactions.find(x=>x.id===id);if(!t) return;
   editingId=id;editTxType=t.type==='adjustment'?'expense':t.type;editSplitPayer=t.payer||'me';editShareMode='rate';
@@ -982,28 +1372,41 @@ function openEdit(id){
   const isAdj=t.isAdj||t.type==='adjustment';
   document.getElementById('edit-isAdj').checked=isAdj;
   document.getElementById('edit-adjRateSection').style.display=isAdj?'':'none';
+  document.getElementById('edit-adjWrap').className='tg adj'+(isAdj?' on':'');
+  document.getElementById('edit-adjSub').textContent=isAdj?'調整を適用する':'割り勘済み費用の自己使用分';
   if(isAdj) document.getElementById('edit-adjRate').value=t.myRate??50;
   editUpdateAdjPreview();
-  document.getElementById('edit-isSplit').checked=!!t.isSplit&&!isAdj;
-  document.getElementById('edit-splitOptions').style.display=(t.isSplit&&!isAdj)?'':'none';
+  const eSplit=!!t.isSplit&&!isAdj;
+  document.getElementById('edit-isSplit').checked=eSplit;
+  document.getElementById('edit-splitOptions').style.display=eSplit?'':'none';
+  document.getElementById('edit-splitWrap').className='tg split'+(eSplit?' on':'');
+  document.getElementById('edit-splitSub').textContent=eSplit?'パートナーと分担する':'パートナーと分担しない';
   document.getElementById('edit-btn-me').className='toggle-btn'+(editSplitPayer==='me'?' active me':'');
   document.getElementById('edit-btn-her').className='toggle-btn'+(editSplitPayer==='her'?' active her':'');
-  document.getElementById('edit-mode-rate').className='toggle-btn active sel';
-  document.getElementById('edit-mode-diff').className='toggle-btn';
-  document.getElementById('edit-share-rate-input').style.display='';
-  document.getElementById('edit-share-diff-input').style.display='none';
+  const em=t.isSplit?(t.shareMode||'rate'):'rate';
+  editShareMode=em;
+  document.getElementById('edit-mode-rate').className='toggle-btn'+(em==='rate'?' active sel':'');
+  document.getElementById('edit-mode-diff').className='toggle-btn'+(em==='diff'?' active sel':'');
+  document.getElementById('edit-mode-amount').className='toggle-btn'+(em==='amount'?' active sel':'');
+  document.getElementById('edit-share-rate-input').style.display=em==='rate'?'':'none';
+  document.getElementById('edit-share-diff-input').style.display=em==='diff'?'':'none';
+  document.getElementById('edit-share-amount-input').style.display=em==='amount'?'':'none';
   const rate=t.myRate??50;
   document.getElementById('edit-myRate').value=rate;
   document.getElementById('edit-herRateDisp').textContent=(100-rate)+'%';
-  editOnRateInput();
+  document.getElementById('edit-diffWho').value=t.diffWho||'me';
+  document.getElementById('edit-diffAmt').value=t.diffAmt||'';
+  document.getElementById('edit-amountWho').value=t.amountWho||'me';
+  document.getElementById('edit-amountShare').value=t.amountShare||'';
+  if(em==='diff') editOnDiffInput(); else if(em==='amount') editOnAmountShareInput(); else editOnRateInput();
   document.getElementById('editModal').style.display='flex';
 }
 function closeModalDirect(){document.getElementById('editModal').style.display='none';editingId=null;}
 function editSetType(t){editTxType=t;document.getElementById('edit-btn-income').className='toggle-btn'+(t==='income'?' active income':'');document.getElementById('edit-btn-expense').className='toggle-btn'+(t==='expense'?' active expense':'');document.getElementById('edit-adjSection').style.display=t==='expense'?'':'none';document.getElementById('edit-splitSection').style.display=t==='expense'?'':'none';buildCatOptions(document.getElementById('edit-category'),t);}
 function editSetPayer(p){editSplitPayer=p;document.getElementById('edit-btn-me').className='toggle-btn'+(p==='me'?' active me':'');document.getElementById('edit-btn-her').className='toggle-btn'+(p==='her'?' active her':'');editOnRateInput();}
-function editSetShareMode(m){editShareMode=m;document.getElementById('edit-mode-rate').className='toggle-btn'+(m==='rate'?' active sel':'');document.getElementById('edit-mode-diff').className='toggle-btn'+(m==='diff'?' active sel':'');document.getElementById('edit-share-rate-input').style.display=m==='rate'?'':'none';document.getElementById('edit-share-diff-input').style.display=m==='diff'?'':'none';}
-function editToggleSplit(){const checked=document.getElementById('edit-isSplit').checked;document.getElementById('edit-splitOptions').style.display=checked?'':'none';if(checked){document.getElementById('edit-isAdj').checked=false;document.getElementById('edit-adjRateSection').style.display='none';}}
-function editOnAdjChange(){const checked=document.getElementById('edit-isAdj').checked;document.getElementById('edit-adjRateSection').style.display=checked?'':'none';if(checked){document.getElementById('edit-isSplit').checked=false;document.getElementById('edit-splitOptions').style.display='none';}editUpdateAdjPreview();}
+function editSetShareMode(m){editShareMode=m;document.getElementById('edit-mode-rate').className='toggle-btn'+(m==='rate'?' active sel':'');document.getElementById('edit-mode-diff').className='toggle-btn'+(m==='diff'?' active sel':'');document.getElementById('edit-mode-amount').className='toggle-btn'+(m==='amount'?' active sel':'');document.getElementById('edit-share-rate-input').style.display=m==='rate'?'':'none';document.getElementById('edit-share-diff-input').style.display=m==='diff'?'':'none';document.getElementById('edit-share-amount-input').style.display=m==='amount'?'':'none';}
+function editOnAmountShareInput(){const amt=parseFloat(document.getElementById('edit-amount').value)||0;if(!amt||!document.getElementById('edit-isSplit').checked){document.getElementById('edit-sharePreview').textContent='';return;}const aw=document.getElementById('edit-amountWho').value;const av=parseFloat(document.getElementById('edit-amountShare').value)||0;const {myShare,herShare}=calcSharesByAmount(amt,av,aw);document.getElementById('edit-sharePreview').textContent=`自分 ${fmt(myShare)} / ${partnerName} ${fmt(herShare)}`;}function editToggleSplit(){const checked=document.getElementById('edit-isSplit').checked;document.getElementById('edit-splitOptions').style.display=checked?'':'none';document.getElementById('edit-splitWrap').className='tg split'+(checked?' on':'');document.getElementById('edit-splitSub').textContent=checked?'パートナーと分担する':'パートナーと分担しない';if(checked){document.getElementById('edit-isAdj').checked=false;document.getElementById('edit-adjRateSection').style.display='none';document.getElementById('edit-adjWrap').className='tg adj';document.getElementById('edit-adjSub').textContent='割り勘済み費用の自己使用分';}}
+function editOnAdjChange(){const checked=document.getElementById('edit-isAdj').checked;document.getElementById('edit-adjRateSection').style.display=checked?'':'none';document.getElementById('edit-adjWrap').className='tg adj'+(checked?' on':'');document.getElementById('edit-adjSub').textContent=checked?'調整を適用する':'割り勘済み費用の自己使用分';if(checked){document.getElementById('edit-isSplit').checked=false;document.getElementById('edit-splitOptions').style.display='none';document.getElementById('edit-splitWrap').className='tg split';document.getElementById('edit-splitSub').textContent='パートナーと分担しない';}editUpdateAdjPreview();}
 function editUpdateAdjPreview(){const amt=parseFloat(document.getElementById('edit-amount').value)||0;const rate=parseInt(document.getElementById('edit-adjRate').value)||50;const prev=document.getElementById('edit-adjPreview');if(!document.getElementById('edit-isAdj').checked||!amt){prev.textContent='-';return;}prev.textContent=`自分+${fmt(Math.ceil(amt*rate/100))} / ${partnerName}-${fmt(Math.floor(amt*(100-rate)/100))}`;}
 function editOnAmountInput(){editOnRateInput();editUpdateAdjPreview();}
 function editOnRateInput(){const v=parseInt(document.getElementById('edit-myRate').value)||0;document.getElementById('edit-herRateDisp').textContent=(100-v)+'%';const amt=parseFloat(document.getElementById('edit-amount').value)||0;if(amt&&document.getElementById('edit-isSplit').checked){const {myShare,herShare}=calcShares(amt,v,editSplitPayer);document.getElementById('edit-sharePreview').textContent=`自分 ${fmt(myShare)} / ${partnerName} ${fmt(herShare)}`;}else document.getElementById('edit-sharePreview').textContent='';}
@@ -1015,12 +1418,11 @@ function saveEdit(){
   const isAdj=document.getElementById('edit-isAdj').checked&&editTxType==='expense';
   const isSplit=!isAdj&&document.getElementById('edit-isSplit').checked&&editTxType==='expense';
   let myShare=null,herShare=null,myRate=null;
-  if(isSplit){if(editShareMode==='rate'){myRate=parseInt(document.getElementById('edit-myRate').value)||50;({myShare,herShare}=calcShares(amount,myRate,editSplitPayer));}else{const dw=document.getElementById('edit-diffWho').value;const da=parseFloat(document.getElementById('edit-diffAmt').value)||0;({myShare,herShare,myRate}=calcSharesByDiff(amount,da,dw,editSplitPayer));}}
+    if(isSplit){if(editShareMode==='rate'){myRate=parseInt(document.getElementById('edit-myRate').value)||50;({myShare,herShare}=calcShares(amount,myRate,editSplitPayer));}else if(editShareMode==='diff'){const dw=document.getElementById('edit-diffWho').value;const da=parseFloat(document.getElementById('edit-diffAmt').value)||0;({myShare,herShare,myRate}=calcSharesByDiff(amount,da,dw,editSplitPayer));}else{const aw=document.getElementById('edit-amountWho').value;const av=parseFloat(document.getElementById('edit-amountShare').value)||0;({myShare,herShare,myRate}=calcSharesByAmount(amount,av,aw));}}
   if(isAdj){myRate=parseInt(document.getElementById('edit-adjRate').value)||50;myShare=Math.ceil(amount*myRate/100);herShare=Math.floor(amount*(100-myRate)/100);}
   const idx=transactions.findIndex(x=>x.id===editingId);
   const orig=transactions[idx];
-  transactions[idx]={id:editingId,type:editTxType,amount,category:document.getElementById('edit-category').value,date:document.getElementById('edit-date').value,memo:document.getElementById('edit-memo').value||document.getElementById('edit-category').value,note:document.getElementById('edit-note').value,isSplit,isAdj,payer:isSplit?editSplitPayer:null,myShare,herShare,myRate,fixedRef:orig.fixedRef,isProvisional:false};
-  save();closeModalDirect();updateHeader();renderHistory();renderSplit();renderReviews();updateFixedReminders();
+  transactions[idx]={id:editingId,type:editTxType,amount,category:document.getElementById('edit-category').value,date:document.getElementById('edit-date').value,memo:document.getElementById('edit-memo').value||document.getElementById('edit-category').value,note:document.getElementById('edit-note').value,isSplit,isAdj,payer:isSplit?editSplitPayer:null,myShare,herShare,myRate,shareMode:isSplit?editShareMode:null,diffAmt:(isSplit&&editShareMode==='diff')?(parseFloat(document.getElementById('edit-diffAmt').value)||0):null,diffWho:(isSplit&&editShareMode==='diff')?document.getElementById('edit-diffWho').value:null,amountShare:(isSplit&&editShareMode==='amount')?(parseFloat(document.getElementById('edit-amountShare').value)||0):null,amountWho:(isSplit&&editShareMode==='amount')?document.getElementById('edit-amountWho').value:null,fixedRef:orig.fixedRef,isProvisional:false};  save();closeModalDirect();updateHeader();renderHistory();renderSplit();renderReviews();updateFixedReminders();
 }
 function deleteTransaction(){if(!editingId) return;if(!confirm('この取引を削除しますか？')) return;transactions=transactions.filter(x=>x.id!==editingId);save();closeModalDirect();updateHeader();renderHistory();renderSplit();renderReviews();updateFixedReminders();}
 let charts={};
@@ -1159,7 +1561,31 @@ let fixedSplitPayer='me';
 function toggleFixedSplit(){const checked=document.getElementById('fixedIsSplit').checked;document.getElementById('fixedSplitOptions').style.display=checked?'':'none';document.getElementById('fixedSplitWrap').className='check-box-wrap'+(checked?' active-split':'');}
 function setFixedPayer(p){fixedSplitPayer=p;document.getElementById('fixed-btn-me').className='toggle-btn'+(p==='me'?' active me':'');document.getElementById('fixed-btn-her').className='toggle-btn'+(p==='her'?' active her':'');}
 function onFixedRateInput(){const v=parseInt(document.getElementById('fixedMyRate').value)||0;document.getElementById('fixedHerRateDisp').textContent=(100-v)+'%';}
-function renderFixed(){const arr=loadFixed();const total=arr.reduce((s,f)=>s+Number(f.amount),0);const el=document.getElementById('fixedList');const totalEl=document.getElementById('fixedTotal');if(totalEl) totalEl.textContent='月計 '+fmt(total);if(!arr.length){el.innerHTML='<div class="empty" style="padding:.75rem 0;font-size:12px">固定費がまだ登録されていません</div>';return;}const groups={};arr.forEach((f,i)=>{if(!groups[f.cat]) groups[f.cat]=[];groups[f.cat].push({...f,idx:i});});el.innerHTML=Object.entries(groups).map(([cat,items])=>{const catTotal=items.reduce((s,f)=>s+Number(f.amount),0);return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0 6px;border-bottom:1px solid var(--border);margin-bottom:4px"><div style="font-size:11px;font-weight:700;color:var(--text2)">${cat}</div><div style="font-size:11px;font-weight:600;color:var(--text2)">${fmt(catTotal)}</div></div>${items.map(f=>{const modeIcon=f.mode===FIXED_MODE_AUTO?'⚡':'🔔';const modeLabel=f.mode===FIXED_MODE_AUTO?'自動':'リマインド';const splitTag=f.isSplit?`<span class="badge ${f.payer==='her'?'badge-her':'badge-me'}" style="margin-left:4px">👫${f.myRate??50}%</span>`:'';return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text)">${f.name} <span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:4px">${modeIcon} ${modeLabel}</span>${splitTag}</div><div style="font-size:11px;color:var(--text3);margin-top:1px">${f.billingDay?f.billingDay+'日　':''}${f.note||''}</div></div><div style="font-size:14px;font-weight:700;color:var(--red);flex-shrink:0">${fmt(f.amount)}</div><div style="display:flex;gap:4px;flex-shrink:0"><button onclick="editFixed(${f.idx})" style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:4px 8px;font-size:11px;cursor:pointer;color:var(--text2)">編集</button><button onclick="deleteFixed(${f.idx})" style="background:var(--red-bg);border:1px solid var(--red-dark);border-radius:7px;padding:4px 8px;font-size:11px;cursor:pointer;color:var(--red-dark)">削除</button></div></div>`;}).join('')}</div>`;}).join('');}
+
+function onFixedCycleChange(){
+  const cycle=document.getElementById('fixedCycle').value;
+  document.getElementById('fixedPayMonthWrap').style.display=cycle==='yearly'?'':'none';
+  document.getElementById('fixedAmountLabel').textContent=cycle==='yearly'?'年額（円）':'金額（円/月）';
+}
+  
+function renderFixed(){const arr=loadFixed();
+  // 月払い分の月計
+  const monthlyTotal=arr.filter(f=>f.cycle!=='yearly').reduce((s,f)=>s+Number(f.amount),0);
+  // 年払い分の年計
+  const yearlyTotal=arr.filter(f=>f.cycle==='yearly').reduce((s,f)=>s+Number(f.amount),0);
+  // 年間固定費（月払い×12 + 年払い）
+  const annualTotal=monthlyTotal*12+yearlyTotal;
+  // 月平均
+  const monthlyAvg=Math.round(annualTotal/12);
+  const el=document.getElementById('fixedList');
+  const totalEl=document.getElementById('fixedTotal');
+  if(totalEl) totalEl.textContent='月計 '+fmt(monthlyTotal);
+  // 年間分析カードを表示
+  const anaEl=document.getElementById('fixedAnalysis');
+  if(anaEl){
+    anaEl.innerHTML=`<div class="metric"><div class="metric-label">年間固定費</div><div class="metric-value" style="color:var(--red)">${fmt(annualTotal)}</div><div class="metric-sub">月払い×12＋年払い</div></div><div class="metric"><div class="metric-label">月平均</div><div class="metric-value">${fmt(monthlyAvg)}</div><div class="metric-sub">${yearlyTotal>0?'年払い '+fmt(yearlyTotal)+' 含む':'年払いなし'}</div></div>`;
+  }
+  if(!arr.length){el.innerHTML='<div class="empty" style="padding:.75rem 0;font-size:12px">固定費がまだ登録されていません</div>';return;}const groups={};arr.forEach((f,i)=>{if(!groups[f.cat]) groups[f.cat]=[];groups[f.cat].push({...f,idx:i});});el.innerHTML=Object.entries(groups).map(([cat,items])=>{const catTotal=items.reduce((s,f)=>s+Number(f.amount),0);return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0 6px;border-bottom:1px solid var(--border);margin-bottom:4px"><div style="font-size:11px;font-weight:700;color:var(--text2)">${cat}</div><div style="font-size:11px;font-weight:600;color:var(--text2)">${fmt(catTotal)}</div></div>${items.map(f=>{const modeIcon=f.mode===FIXED_MODE_AUTO?'⚡':'🔔';const modeLabel=f.mode===FIXED_MODE_AUTO?'自動':'リマインド';const splitTag=f.isSplit?`<span class="badge ${f.payer==='her'?'badge-her':'badge-me'}" style="margin-left:4px">👫${f.myRate??50}%</span>`:'';return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text)">${f.name} <span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:4px">${modeIcon} ${modeLabel}</span>${splitTag}</div><div style="font-size:11px;color:var(--text3);margin-top:1px">${f.billingDay?f.billingDay+'日　':''}${f.note||''}</div></div><div style="font-size:14px;font-weight:700;color:var(--red);flex-shrink:0">${fmt(f.amount)}</div><div style="display:flex;gap:4px;flex-shrink:0"><button onclick="editFixed(${f.idx})" style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:4px 8px;font-size:11px;cursor:pointer;color:var(--text2)">編集</button><button onclick="deleteFixed(${f.idx})" style="background:var(--red-bg);border:1px solid var(--red-dark);border-radius:7px;padding:4px 8px;font-size:11px;cursor:pointer;color:var(--red-dark)">削除</button></div></div>`;}).join('')}</div>`;}).join('');}
 function openFixedForm(idx=null){
   editingFixedIdx=idx;
   const card=document.getElementById('fixedFormCard');
@@ -1172,6 +1598,10 @@ function openFixedForm(idx=null){
     document.getElementById('fixedCat').value=f.cat;
     document.getElementById('fixedBillingDay').value=f.billingDay||'';
     document.getElementById('fixedMode').value=f.mode||'remind';
+    document.getElementById('fixedStartYm').value=f.startYm||'';
+    document.getElementById('fixedCycle').value=f.cycle||'monthly';
+    document.getElementById('fixedPayMonth').value=f.payMonth||1;
+    onFixedCycleChange();
     document.getElementById('fixedNote').value=f.note||'';
     document.getElementById('fixedIsSplit').checked=!!f.isSplit;
     document.getElementById('fixedSplitOptions').style.display=f.isSplit?'':'none';
@@ -1185,6 +1615,10 @@ function openFixedForm(idx=null){
     document.getElementById('fixedAmount').value='';
     document.getElementById('fixedBillingDay').value='';
     document.getElementById('fixedMode').value='remind';
+    document.getElementById('fixedStartYm').value=new Date().toISOString().slice(0,7);
+    document.getElementById('fixedCycle').value='monthly';
+    document.getElementById('fixedPayMonth').value=1;
+    onFixedCycleChange();
     document.getElementById('fixedNote').value='';
     document.getElementById('fixedIsSplit').checked=false;
     document.getElementById('fixedSplitOptions').style.display='none';
@@ -1204,7 +1638,9 @@ function saveFixed(){
   const arr=loadFixed();
   const existingSkipped=editingFixedIdx!=null?(arr[editingFixedIdx].skippedYM||[]):[];
   const isSplit=document.getElementById('fixedIsSplit').checked;
-  const item={name,amount,cat:document.getElementById('fixedCat').value,billingDay:document.getElementById('fixedBillingDay').value.trim(),mode:document.getElementById('fixedMode').value||'remind',note:document.getElementById('fixedNote').value.trim(),skippedYM:existingSkipped,isSplit,payer:isSplit?fixedSplitPayer:null,myRate:isSplit?(parseInt(document.getElementById('fixedMyRate').value)||50):null};
+  const cycle=document.getElementById('fixedCycle').value||'monthly';
+  const item={name,amount,cat:document.getElementById('fixedCat').value,billingDay:document.getElementById('fixedBillingDay').value.trim(),startYm:document.getElementById('fixedStartYm').value||'',mode:document.getElementById('fixedMode').value||'remind',cycle,payMonth:cycle==='yearly'?(parseInt(document.getElementById('fixedPayMonth').value)||1):null,note:document.getElementById('fixedNote').value.trim(),skippedYM:existingSkipped,isSplit,payer:isSplit?fixedSplitPayer:null,myRate:isSplit?(parseInt(document.getElementById('fixedMyRate').value)||50):null};
+
   if(editingFixedIdx!=null) arr[editingFixedIdx]=item;
   else arr.push(item);
   saveFixedData(arr);
