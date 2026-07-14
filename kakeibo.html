@@ -390,6 +390,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
         </div>
         <div><label>支払日</label><input type="text" id="fixedBillingDay" placeholder="例：1、15"></div>
       </div>
+      <div class="form-row">
+        <div><label>開始年月</label><input type="month" id="fixedStartYm"></div>
+        <div style="display:flex;align-items:flex-end"><div style="font-size:11px;color:var(--text3);padding-bottom:10px">この月以降に計上</div></div>
+      </div>
       <div class="form-row full">
         <div><label>計上モード</label>
           <select id="fixedMode">
@@ -652,6 +656,7 @@ function postProvisional(y, m){
   let added=0;
   fixed.forEach(f=>{
     if(f.mode!==FIXED_MODE_REMIND&&f.mode!==FIXED_MODE_AUTO) return;
+    if(f.startYm && ym < f.startYm) return;
     if((f.skippedYM||[]).includes(ym)) return;
     const ref=fixedRefKey(f);
     if(isAlreadyPosted(ref,y,m)) return;
@@ -830,7 +835,10 @@ function addTransaction(){
   document.getElementById('adjRateSection').style.display='none';
   document.getElementById('sharePreview').textContent='';
   setPayer('me');
-  updateHeader();renderHistory();renderSplit();renderReviews();updateMemoSuggestions();switchTab('history');
+  updateHeader();renderHistory();renderSplit();renderReviews();updateMemoSuggestions();
+  showSyncStatus('✅ 記録しました '+new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}),'var(--green-dark)');
+  document.getElementById('amount').focus();
+`
 }
 function setHistMode(m){histMode=m;document.getElementById('hist-btn-all').className='toggle-btn'+(m==='all'?' active sel':'');document.getElementById('hist-btn-my').className='toggle-btn'+(m==='my'?' active sel':'');document.getElementById('histSummaryCard').style.display=m==='my'?'':'none';renderHistory();}
 function buildHistCatFilter(){
@@ -1172,6 +1180,7 @@ function openFixedForm(idx=null){
     document.getElementById('fixedCat').value=f.cat;
     document.getElementById('fixedBillingDay').value=f.billingDay||'';
     document.getElementById('fixedMode').value=f.mode||'remind';
+    document.getElementById('fixedStartYm').value=f.startYm||'';
     document.getElementById('fixedNote').value=f.note||'';
     document.getElementById('fixedIsSplit').checked=!!f.isSplit;
     document.getElementById('fixedSplitOptions').style.display=f.isSplit?'':'none';
@@ -1185,6 +1194,7 @@ function openFixedForm(idx=null){
     document.getElementById('fixedAmount').value='';
     document.getElementById('fixedBillingDay').value='';
     document.getElementById('fixedMode').value='remind';
+    document.getElementById('fixedStartYm').value=new Date().toISOString().slice(0,7);
     document.getElementById('fixedNote').value='';
     document.getElementById('fixedIsSplit').checked=false;
     document.getElementById('fixedSplitOptions').style.display='none';
@@ -1204,7 +1214,7 @@ function saveFixed(){
   const arr=loadFixed();
   const existingSkipped=editingFixedIdx!=null?(arr[editingFixedIdx].skippedYM||[]):[];
   const isSplit=document.getElementById('fixedIsSplit').checked;
-  const item={name,amount,cat:document.getElementById('fixedCat').value,billingDay:document.getElementById('fixedBillingDay').value.trim(),mode:document.getElementById('fixedMode').value||'remind',note:document.getElementById('fixedNote').value.trim(),skippedYM:existingSkipped,isSplit,payer:isSplit?fixedSplitPayer:null,myRate:isSplit?(parseInt(document.getElementById('fixedMyRate').value)||50):null};
+  const item={name,amount,cat:document.getElementById('fixedCat').value,billingDay:document.getElementById('fixedBillingDay').value.trim(),startYm:document.getElementById('fixedStartYm').value||'',mode:document.getElementById('fixedMode').value||'remind',note:document.getElementById('fixedNote').value.trim(),skippedYM:existingSkipped,isSplit,payer:isSplit?fixedSplitPayer:null,myRate:isSplit?(parseInt(document.getElementById('fixedMyRate').value)||50):null};
   if(editingFixedIdx!=null) arr[editingFixedIdx]=item;
   else arr.push(item);
   saveFixedData(arr);
