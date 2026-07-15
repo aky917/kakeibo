@@ -111,6 +111,14 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
 .tx-item:last-child{border-bottom:none}
 .tx-item:active{opacity:.7}
 .tx-item.provisional{opacity:.7}
+
+/* ===== スワイプ削除 ===== */
+.tx-swipe-wrap{position:relative;overflow:hidden}
+.tx-swipe-wrap .tx-item{position:relative;background:var(--bg2);transition:transform .2s ease;z-index:1;will-change:transform}
+.tx-swipe-wrap.swiped .tx-item{transform:translateX(-80px)}
+.tx-swipe-del{position:absolute;top:0;right:0;bottom:0;width:80px;background:var(--red);color:#fff;border:none;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;z-index:0}
+.tx-swipe-del:active{background:var(--red-dark)}
+  
 .tx-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
 .tx-info{flex:1;min-width:0}
 .tx-memo{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -155,6 +163,27 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
 .modal-close{font-size:20px;cursor:pointer;color:var(--text2);background:none;border:none;font-family:inherit}
 .prov-chip{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:3px 7px;font-size:10px;cursor:pointer;font-family:inherit;color:var(--text2)}
 .prov-chip:active{background:var(--hdr);color:#fff}
+
+
+/* ===== 電卓演算子ボタン ===== */
+.calc-ops{margin-top:6px;display:flex;flex-direction:column;gap:4px}
+.calc-row{display:flex;gap:4px}
+.calc-op{flex:1;padding:8px 0;font-size:15px;font-weight:600;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);cursor:pointer;font-family:inherit;transition:all .1s}
+.calc-op:active{background:var(--hdr);color:#fff;transform:scale(.95)}
+.calc-op.clear{flex:2;color:var(--red-dark);background:var(--red-bg);border-color:rgba(208,88,48,.3);font-size:13px}
+.calc-op.clear:active{background:var(--red);color:#fff}
+
+/* ===== 記録成功トースト ===== */
+#successToast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.7);background:rgba(29,158,117,.96);color:#fff;border-radius:20px;padding:22px 30px;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:3000;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+#successToast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#successToast .st-check{width:48px;height:48px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--green)}
+#successToast .st-check svg{width:30px;height:30px}
+#successToast .st-text{font-size:14px;font-weight:700;letter-spacing:.5px}
+.st-check-circle{stroke-dasharray:150;stroke-dashoffset:150;animation:stCircle .4s ease forwards}
+.st-check-tick{stroke-dasharray:30;stroke-dashoffset:30;animation:stTick .3s .3s ease forwards}
+@keyframes stCircle{to{stroke-dashoffset:0}}
+@keyframes stTick{to{stroke-dashoffset:0}}
+
 
 /* ===== 割り勘帳票 ===== */
 #reportOverlay{position:fixed;inset:0;background:#ddd;z-index:2000;overflow-y:auto;padding:20px;display:none}
@@ -201,8 +230,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
 }
   
 @media print{body{background:#fff}.no-print{display:none!important}.container{max-width:100%;padding:0}.card{border:1px solid #ccc;break-inside:avoid}}
+
+
+
 </style>
 </head>
+
+
 <body>
 <div id="lockScreen" style="display:none;position:fixed;inset:0;background:var(--hdr);z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px">
   <div style="font-size:44px">🔐</div>
@@ -265,11 +299,33 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
         <button class="toggle-btn expense" id="btn-expense" onclick="setType('expense')">－ 支出</button>
       </div>
       <div class="form-row">
-        <div><label>金額（円）</label><input type="number" id="amount" placeholder="0" inputmode="numeric" oninput="onAmountInput()"></div>
+        <div><label>金額（円）</label><input type="text" id="amount" placeholder="0 または (100+200)×3" inputmode="numeric" oninput="onAmountInput()"><div id="amountCalc" style="font-size:11px;color:var(--text3);margin-top:2px;min-height:14px"></div>
+          <div class="calc-ops">
+            <div class="calc-row">
+              <button type="button" class="calc-op" onclick="appendOp('+')">＋</button>
+              <button type="button" class="calc-op" onclick="appendOp('-')">－</button>
+              <button type="button" class="calc-op" onclick="appendOp('*')">×</button>
+              <button type="button" class="calc-op" onclick="appendOp('/')">÷</button>
+            </div>
+            <div class="calc-row">
+              <button type="button" class="calc-op" onclick="appendOp('(')">(</button>
+              <button type="button" class="calc-op" onclick="appendOp(')')">)</button>
+              <button type="button" class="calc-op clear" onclick="clearAmount()">C クリア</button>
+            </div>
+          </div>
+        </div>
         <div><label>カテゴリ</label><select id="category" onchange="onCategoryChange()"></select></div>
       </div>
       <div class="form-row">
-        <div><label>日付</label><input type="date" id="txdate"></div>
+        <div>
+          <label>日付</label>
+          <input type="date" id="txdate">
+          <div style="display:flex;gap:5px;margin-top:5px">
+            <button type="button" class="prov-chip" style="flex:1;padding:5px" onclick="setDateQuick(0)">今日</button>
+            <button type="button" class="prov-chip" style="flex:1;padding:5px" onclick="setDateQuick(-1)">昨日</button>
+          </div>
+        </div>
+
         <div><label>メモ</label><input type="text" id="memo" placeholder="例：ランチ" list="memoSuggest" autocomplete="off"><datalist id="memoSuggest"></datalist></div>
       </div>
       <div class="form-row full">
@@ -717,6 +773,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
     </div>
     
     <button class="btn primary" onclick="saveEdit()">保存する</button>
+    <button class="btn" style="margin-top:8px;background:#EEF4FB;color:var(--blue);border-color:var(--blue)" onclick="duplicateTransaction()">🔁 これを複製して入力</button>
     <button class="btn danger" style="margin-top:8px" onclick="deleteTransaction()">この取引を削除する</button>
   </div>
 </div>
@@ -727,6 +784,16 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
   <button class="btn primary" onclick="window.print()" style="flex:2;margin-top:0">🖨️ 印刷 / PDF保存</button>
   </div>
   <div id="reportBody"></div>
+</div>
+
+<div id="successToast">
+  <div class="st-check">
+    <svg viewBox="0 0 52 52">
+      <circle class="st-check-circle" cx="26" cy="26" r="23" fill="none" stroke="#1D9E75" stroke-width="4"/>
+      <path class="st-check-tick" fill="none" stroke="#1D9E75" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" d="M15 27 l8 8 l15 -16"/>
+    </svg>
+  </div>
+  <div class="st-text" id="successToastText">記録しました</div>
 </div>
   
 <script>
@@ -1013,14 +1080,51 @@ function toggleSplitOptions(){const checked=document.getElementById('isSplit').c
 function onAdjChange(){const checked=document.getElementById('isAdj').checked;document.getElementById('adjRateSection').style.display=checked?'':'none';document.getElementById('adjWrap').className='tg adj'+(checked?' on':'');document.getElementById('adjSub').textContent=checked?'調整を適用する':'割り勘済み費用の自己使用分';if(checked){document.getElementById('isSplit').checked=false;document.getElementById('splitOptions').style.display='none';document.getElementById('splitWrap').className='tg split';document.getElementById('splitSub').textContent='パートナーと分担しない';}updateAdjPreview();}
 function applyDefaultRate(){const cat=document.getElementById('category').value;const rate=catRates[cat]??50;document.getElementById('myRate').value=rate;document.getElementById('herRateDisp').textContent=(100-rate)+'%';updateSharePreview();}
 function onCategoryChange(){if(txType==='expense') applyDefaultRate();}
-function onAmountInput(){updateSharePreview();updateAdjPreview();}
+
+// 四則演算の式を安全に評価（+, -, *, /, ()のみ許可）
+function evalAmount(str){
+  if(str==null) return 0;
+  const s=String(str).trim();
+  if(!s) return 0;
+  // 数字と演算子だけか検証
+  if(!/^[0-9+\-*/().\s]+$/.test(s)) return NaN;
+  try{
+    const v=Function('"use strict";return('+s+')')();
+    return (typeof v==='number'&&isFinite(v))?v:NaN;
+  }catch(e){return NaN;}
+}
+function getAmountValue(){
+  return evalAmount(document.getElementById('amount').value);
+}
+function onAmountInput(){
+  const raw=document.getElementById('amount').value;
+  const calc=document.getElementById('amountCalc');
+  // 式（演算子を含む）なら計算結果を表示
+  if(calc){
+    if(/[+\-*/]/.test(raw.replace(/^-/,''))&&raw.trim()){
+      const v=evalAmount(raw);
+      calc.textContent=isNaN(v)?'式が正しくありません':'= '+fmt(v);
+      calc.style.color=isNaN(v)?'var(--red)':'var(--green-dark)';
+    }else{
+      calc.textContent='';
+    }
+  }
+  updateSharePreview();updateAdjPreview();
+}
+
+function setDateQuick(offset){
+  const d=new Date();
+  d.setDate(d.getDate()+offset);
+  document.getElementById('txdate').value=d.toISOString().slice(0,10);
+}
+  
 function onRateInput(){const v=parseInt(document.getElementById('myRate').value)||0;document.getElementById('herRateDisp').textContent=(100-v)+'%';updateSharePreview();}
 function onDiffInput(){updateSharePreview();}
-function updateAdjPreview(){const amt=parseFloat(document.getElementById('amount').value)||0;const rate=parseInt(document.getElementById('adjRate').value)||50;const prev=document.getElementById('adjPreview');if(!document.getElementById('isAdj').checked||!amt){prev.textContent='-';return;}prev.textContent=`自分+${fmt(Math.ceil(amt*rate/100))} / ${partnerName}-${fmt(Math.floor(amt*(100-rate)/100))}`;}
-function updateSharePreview(){const amt=parseFloat(document.getElementById('amount').value)||0;const el=document.getElementById('sharePreview');if(!amt||!document.getElementById('isSplit').checked){el.textContent='';return;}let myShare,herShare;if(shareMode==='rate'){const rate=parseInt(document.getElementById('myRate').value)||50;({myShare,herShare}=calcShares(amt,rate,splitPayer));}else if(shareMode==='diff'){const dw=document.getElementById('diffWho').value;const da=parseFloat(document.getElementById('diffAmt').value)||0;({myShare,herShare}=calcSharesByDiff(amt,da,dw,splitPayer));}else{const aw=document.getElementById('amountWho').value;const av=parseFloat(document.getElementById('amountShare').value)||0;({myShare,herShare}=calcSharesByAmount(amt,av,aw));}el.textContent=`自分 ${fmt(myShare)} / ${partnerName} ${fmt(herShare)}`;}
+function updateAdjPreview(){const amt=getAmountValue()||0;const rate=parseInt(document.getElementById('adjRate').value)||50;const prev=document.getElementById('adjPreview');if(!document.getElementById('isAdj').checked||!amt){prev.textContent='-';return;}prev.textContent=`自分+${fmt(Math.ceil(amt*rate/100))} / ${partnerName}-${fmt(Math.floor(amt*(100-rate)/100))}`;}
+function updateSharePreview(){const amt=getAmountValue()||0;const el=document.getElementById('sharePreview');if(!amt||!document.getElementById('isSplit').checked){el.textContent='';return;}let myShare,herShare;if(shareMode==='rate'){const rate=parseInt(document.getElementById('myRate').value)||50;({myShare,herShare}=calcShares(amt,rate,splitPayer));}else if(shareMode==='diff'){const dw=document.getElementById('diffWho').value;const da=parseFloat(document.getElementById('diffAmt').value)||0;({myShare,herShare}=calcSharesByDiff(amt,da,dw,splitPayer));}else{const aw=document.getElementById('amountWho').value;const av=parseFloat(document.getElementById('amountShare').value)||0;({myShare,herShare}=calcSharesByAmount(amt,av,aw));}el.textContent=`自分 ${fmt(myShare)} / ${partnerName} ${fmt(herShare)}`;}
 function addTransaction(){
-  const amount=parseFloat(document.getElementById('amount').value);
-  if(!amount||amount<=0){alert('金額を入力してください');return;}
+  const amount=getAmountValue();
+  if(!amount||isNaN(amount)||amount<=0){alert('金額を入力してください（例: 1200 または 1200+800）');return;}
   const isAdj=document.getElementById('isAdj').checked&&txType==='expense';
   const isSplit=!isAdj&&document.getElementById('isSplit').checked&&txType==='expense';
   let myShare=null,herShare=null,myRate=null;
@@ -1028,6 +1132,7 @@ function addTransaction(){
   if(isAdj){myRate=parseInt(document.getElementById('adjRate').value)||50;myShare=Math.ceil(amount*myRate/100);herShare=Math.floor(amount*(100-myRate)/100);}
   transactions.push({id:nextId(),type:txType,amount,category:document.getElementById('category').value,date:document.getElementById('txdate').value,memo:document.getElementById('memo').value||document.getElementById('category').value,note:document.getElementById('note').value,isSplit,isAdj,payer:isSplit?splitPayer:null,myShare,herShare,myRate,shareMode:isSplit?shareMode:null,diffAmt:(isSplit&&shareMode==='diff')?(parseFloat(document.getElementById('diffAmt').value)||0):null,diffWho:(isSplit&&shareMode==='diff')?document.getElementById('diffWho').value:null,amountShare:(isSplit&&shareMode==='amount')?(parseFloat(document.getElementById('amountShare').value)||0):null,amountWho:(isSplit&&shareMode==='amount')?document.getElementById('amountWho').value:null});  save();
   document.getElementById('amount').value='';
+  const ac=document.getElementById('amountCalc');if(ac) ac.textContent='';
   document.getElementById('memo').value='';
   document.getElementById('note').value='';
   document.getElementById('isSplit').checked=false;
@@ -1048,8 +1153,24 @@ function addTransaction(){
   setShareMode('rate');
     updateHeader();renderHistory();renderSplit();renderReviews();updateMemoSuggestions();renderTagChips();
   showSyncStatus('✅ 記録しました '+new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}),'var(--green-dark)');
-  document.getElementById('amount').focus();
+  showSuccessToast('記録しました');
+  document.getElementById('amount').blur();
 }
+
+let _toastTimer=null;
+function showSuccessToast(msg){
+  const el=document.getElementById('successToast');
+  if(!el) return;
+  document.getElementById('successToastText').textContent=msg||'記録しました';
+  // SVGアニメを再生し直すため一度リセット
+  el.querySelectorAll('.st-check-circle,.st-check-tick').forEach(n=>{
+    n.style.animation='none';n.offsetHeight;n.style.animation='';
+  });
+  el.classList.add('show');
+  if(_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>el.classList.remove('show'),1100);
+}
+  
 function setHistMode(m){histMode=m;document.getElementById('hist-btn-all').className='toggle-btn'+(m==='all'?' active sel':'');document.getElementById('hist-btn-my').className='toggle-btn'+(m==='my'?' active sel':'');document.getElementById('histSummaryCard').style.display=m==='my'?'':'none';renderHistory();}
 
 function shareModeLabel(t){
@@ -1163,11 +1284,11 @@ function renderHistory(){
   else if(sort==='amount_desc') tx.sort((a,b)=>b.amount-a.amount);
   else if(sort==='amount_asc') tx.sort((a,b)=>a.amount-b.amount);
   else if(sort==='category') tx.sort((a,b)=>(a.category||'').localeCompare(b.category||'')||a.date.localeCompare(b.date));
+  
   const el=document.getElementById('txList');
   // フィルタサマリー
   const sumEl=document.getElementById('histFilterSummary');
-  const hasFilter=(document.getElementById('histSearch')?.value||'')||document.getElementById('histFilterType')?.value||document.getElementById('histFilterCat')?.value||document.getElementById('histFilterPayer')?.value||document.getElementById('histPeriod')?.value||document.getElementById('histMin')?.value||document.getElementById('histMax')?.value;  
-  
+  const hasFilter=(document.getElementById('histSearch')?.value||'')||document.getElementById('histFilterType')?.value||document.getElementById('histFilterCat')?.value||document.getElementById('histFilterPayer')?.value||document.getElementById('histPeriod')?.value||document.getElementById('histMin')?.value||document.getElementById('histMax')?.value;
   if(sumEl){
     if(hasFilter){
       const inc=tx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
@@ -1176,7 +1297,6 @@ function renderHistory(){
       const isTag=kw.startsWith('#');
       sumEl.style.display='';
       if(isTag && exp>0){
-        // タグ検索の支出集計を強調
         const expTx=tx.filter(t=>t.type!=='income');
         const amounts=expTx.map(t=>(t.isAdj||t.isSplit)?(t.myShare||0):t.amount);
         const avg=amounts.length?Math.round(exp/amounts.length):0;
@@ -1190,14 +1310,11 @@ function renderHistory(){
       sumEl.style.display='none';
     }
   }
-
-  
-  if(histMode==='my'){
-    const inc=tx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-    const exp=realExp(tx);const bal=inc-exp;
-    document.getElementById('histSummary').innerHTML=`<div class="detail-row"><span>収入</span><div class="dr-right"><div class="dr-main" style="color:var(--green)">${fmt(inc)}</div></div></div><div class="detail-row"><span>実質支出</span><div class="dr-right"><div class="dr-main" style="color:var(--red)">${fmt(exp)}</div></div></div><div class="detail-row"><span>収支</span><div class="dr-right"><div class="dr-main" style="color:${bal>=0?'var(--blue)':'var(--red)'}">${(bal>=0?'':'-')+fmt(bal)}</div></div></div>`;
-    if(!tx.length){el.innerHTML='<div class="empty">該当する記録がありません</div>';return;}
-    el.innerHTML=tx.map(t=>{
+  const sortKey=document.getElementById('histSort')?.value||'date_desc';
+  const doGroup=(sortKey==='date_desc'||sortKey==='date_asc');
+  // 1取引のHTMLを生成
+  const rowHtml=(t)=>{
+    if(histMode==='my'){
       let dispAmt,color,sign,note2='';
       if(t.type==='income'){dispAmt=t.amount;color='var(--green)';sign='+';}
       else if(t.isAdj||t.type==='adjustment'){dispAmt=t.myShare||0;color='var(--orange)';sign='+';note2=' (調整加算)';}
@@ -1205,12 +1322,8 @@ function renderHistory(){
       else{dispAmt=t.amount;color='var(--red)';sign='-';}
       const icon=(t.isAdj||t.type==='adjustment')?'🔧':(t.isProvisional?'⏳':(t.category?t.category.slice(0,2):'💴'));
       const bg=(t.isAdj||t.type==='adjustment')?'#FFF8EC':(t.isProvisional?'#FFF0D0':((CAT_COLORS[t.category]||'#888')+'22'));
-      return `<div class="tx-item${t.isProvisional?' provisional':''}" onclick="openEdit(${t.id})"><div class="tx-icon" style="background:${bg}">${icon}</div><div class="tx-info"><div class="tx-memo">${t.memo}${t.isProvisional?'<span class="badge badge-prov">仮</span>':''}</div><div class="tx-sub">${t.date}${t.category?' · '+t.category:''}${note2}</div></div><div class="tx-amount" style="color:${color}">${sign}${fmt(dispAmt)}</div><div style="font-size:13px;color:var(--text3)">›</div></div>`;
-    }).join('');
-    return;
-  }
-  if(!tx.length){el.innerHTML='<div class="empty">該当する記録がありません</div>';return;}
-  el.innerHTML=tx.map(t=>{
+      return `<div class="tx-swipe-wrap" data-id="${t.id}"><button class="tx-swipe-del" onclick="event.stopPropagation();deleteById(${t.id})">削除</button><div class="tx-item${t.isProvisional?' provisional':''}" onclick="openEdit(${t.id})"><div class="tx-icon" style="background:${bg}">${icon}</div><div class="tx-info"><div class="tx-memo">${t.memo}${t.isProvisional?'<span class="badge badge-prov">仮</span>':''}</div><div class="tx-sub">${t.date}${t.category?' · '+t.category:''}${note2}</div></div><div class="tx-amount" style="color:${color}">${sign}${fmt(dispAmt)}</div><div style="font-size:13px;color:var(--text3)">›</div></div></div>`;
+    }
     const isAdj=t.isAdj||t.type==='adjustment';
     let badge='';
     if(t.isProvisional) badge='<span class="badge badge-prov">仮</span>';
@@ -1222,9 +1335,81 @@ function renderHistory(){
     const icon=isAdj?'🔧':(t.isProvisional?'⏳':(t.category?t.category.slice(0,2):'💴'));
     const bg=isAdj?'#FFF8EC':(t.isProvisional?'#FFF0D0':((CAT_COLORS[t.category]||'#888')+'22'));
     const modeLine=t.isSplit?`<div class="tx-sub" style="color:var(--purple)">${shareModeLabel(t)}</div>`:'';
-    return `<div class="tx-item${t.isProvisional?' provisional':''}" onclick="openEdit(${t.id})"><div class="tx-icon" style="background:${bg}">${icon}</div><div class="tx-info"><div class="tx-memo">${t.memo}${badge}</div><div class="tx-sub">${t.date}${t.category?' · '+t.category:''}${t.note?' · '+t.note.slice(0,20):''}</div>${modeLine}</div><div class="tx-amount" style="color:${color}">${sign}${fmt(t.amount)}</div><div style="font-size:13px;color:var(--text3)">›</div></div>`;  }).join('');
+    return `<div class="tx-swipe-wrap" data-id="${t.id}"><button class="tx-swipe-del" onclick="event.stopPropagation();deleteById(${t.id})">削除</button><div class="tx-item${t.isProvisional?' provisional':''}" onclick="openEdit(${t.id})"><div class="tx-icon" style="background:${bg}">${icon}</div><div class="tx-info"><div class="tx-memo">${t.memo}${badge}</div><div class="tx-sub">${t.date}${t.category?' · '+t.category:''}${t.note?' · '+t.note.slice(0,20):''}</div>${modeLine}</div><div class="tx-amount" style="color:${color}">${sign}${fmt(t.amount)}</div><div style="font-size:13px;color:var(--text3)">›</div></div></div>`;
+  };
+  // 「自分だけ」モードのサマリー
+  if(histMode==='my'){
+    const inc=tx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+    const exp=realExp(tx);const bal=inc-exp;
+    document.getElementById('histSummary').innerHTML=`<div class="detail-row"><span>収入</span><div class="dr-right"><div class="dr-main" style="color:var(--green)">${fmt(inc)}</div></div></div><div class="detail-row"><span>実質支出</span><div class="dr-right"><div class="dr-main" style="color:var(--red)">${fmt(exp)}</div></div></div><div class="detail-row"><span>収支</span><div class="dr-right"><div class="dr-main" style="color:${bal>=0?'var(--blue)':'var(--red)'}">${(bal>=0?'':'-')+fmt(bal)}</div></div></div>`;
+  }
+  if(!tx.length){el.innerHTML='<div class="empty">該当する記録がありません</div>';initSwipe();return;}
+  // 日別支出合計（表示モードに応じて）
+  const dayExpense=(list)=>list.reduce((s,t)=>{
+    if(t.type==='income') return s;
+    if(histMode==='my'){ return s+((t.isAdj||t.isSplit)?(t.myShare||0):t.amount); }
+    // 全体モードは表示額（割り勘も全体額）
+    return s+t.amount;
+  },0);
+  if(doGroup){
+    // 日付でグループ化
+    const groups={};
+    tx.forEach(t=>{ (groups[t.date]=groups[t.date]||[]).push(t); });
+    const dates=Object.keys(groups).sort((a,b)=> sortKey==='date_desc'? b.localeCompare(a) : a.localeCompare(b));
+    const wd=['日','月','火','水','木','金','土'];
+    el.innerHTML=dates.map(date=>{
+      const d=new Date(date);
+      const label=(d.getMonth()+1)+'月'+d.getDate()+'日('+wd[d.getDay()]+')';
+      const dExp=dayExpense(groups[date]);
+      const head=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 2px 6px;border-bottom:1px solid var(--border);margin-top:6px"><span style="font-size:12px;font-weight:700;color:var(--text)">${label}</span>${dExp>0?`<span style="font-size:11px;color:var(--text2)">支出 ${fmt(dExp)}</span>`:''}</div>`;
+      return head+groups[date].map(rowHtml).join('');
+    }).join('');
+  }else{
+    // グルーピングなし（金額順・カテゴリ順）
+    el.innerHTML=tx.map(rowHtml).join('');
+  }
+  initSwipe();
 }
 
+// ID指定で削除
+function deleteById(id){
+  const t=transactions.find(x=>x.id===id);
+  if(!t) return;
+  if(!confirm((t.memo||'この取引')+' を削除しますか？')) return;
+  transactions=transactions.filter(x=>x.id!==id);
+  save();updateHeader();renderHistory();renderSplit();renderReviews();updateFixedReminders();
+}
+// スワイプ検出（タッチ）
+let _swipeStartX=0,_swipeWrap=null;
+function initSwipe(){
+  const list=document.getElementById('txList');
+  if(!list||list.dataset.swipeInit) return;
+  list.dataset.swipeInit='1';
+  list.addEventListener('touchstart',e=>{
+    const wrap=e.target.closest('.tx-swipe-wrap');
+    _swipeWrap=wrap;
+    _swipeStartX=e.touches[0].clientX;
+  },{passive:true});
+  list.addEventListener('touchmove',e=>{
+    if(!_swipeWrap) return;
+    const dx=e.touches[0].clientX-_swipeStartX;
+    // 左スワイプ（dx<0）で開く、右で閉じる
+    if(dx<-30){
+      // 他の開いてるものを閉じる
+      list.querySelectorAll('.tx-swipe-wrap.swiped').forEach(w=>{if(w!==_swipeWrap)w.classList.remove('swiped');});
+      _swipeWrap.classList.add('swiped');
+    }else if(dx>30){
+      _swipeWrap.classList.remove('swiped');
+    }
+  },{passive:true});
+  // リスト外タップで閉じる
+  document.addEventListener('touchstart',e=>{
+    if(!e.target.closest('.tx-swipe-wrap')){
+      list.querySelectorAll('.tx-swipe-wrap.swiped').forEach(w=>w.classList.remove('swiped'));
+    }
+  },{passive:true});
+}
+                      
 function updateMemoSuggestions(){
   const dl=document.getElementById('memoSuggest');
   if(!dl) return;
@@ -1418,6 +1603,29 @@ function editOnAmountShareInput(){const amt=parseFloat(document.getElementById('
 function editOnAdjChange(){const checked=document.getElementById('edit-isAdj').checked;document.getElementById('edit-adjRateSection').style.display=checked?'':'none';document.getElementById('edit-adjWrap').className='tg adj'+(checked?' on':'');document.getElementById('edit-adjSub').textContent=checked?'調整を適用する':'割り勘済み費用の自己使用分';if(checked){document.getElementById('edit-isSplit').checked=false;document.getElementById('edit-splitOptions').style.display='none';document.getElementById('edit-splitWrap').className='tg split';document.getElementById('edit-splitSub').textContent='パートナーと分担しない';}editUpdateAdjPreview();}
 function editUpdateAdjPreview(){const amt=parseFloat(document.getElementById('edit-amount').value)||0;const rate=parseInt(document.getElementById('edit-adjRate').value)||50;const prev=document.getElementById('edit-adjPreview');if(!document.getElementById('edit-isAdj').checked||!amt){prev.textContent='-';return;}prev.textContent=`自分+${fmt(Math.ceil(amt*rate/100))} / ${partnerName}-${fmt(Math.floor(amt*(100-rate)/100))}`;}
 function editOnAmountInput(){editOnRateInput();editUpdateAdjPreview();}
+
+function appendOp(op){
+  const el=document.getElementById('amount');
+  let v=el.value;
+  // 括弧はそのまま追加、演算子は連続を防止（末尾が演算子なら置き換え）
+  if(op==='('||op===')'){
+    v=v+op;
+  }else{
+    if(/[+\-*/]$/.test(v)){ v=v.slice(0,-1)+op; }  // 末尾演算子を上書き
+    else if(v===''){ /* 空の時は演算子だけ置かない（先頭は無視）*/ return; }
+    else{ v=v+op; }
+  }
+  el.value=v;
+  onAmountInput();
+  el.focus();
+}
+function clearAmount(){
+  const el=document.getElementById('amount');
+  el.value='';
+  onAmountInput();
+  el.focus();
+}
+  
 function editOnRateInput(){const v=parseInt(document.getElementById('edit-myRate').value)||0;document.getElementById('edit-herRateDisp').textContent=(100-v)+'%';const amt=parseFloat(document.getElementById('edit-amount').value)||0;if(amt&&document.getElementById('edit-isSplit').checked){const {myShare,herShare}=calcShares(amt,v,editSplitPayer);document.getElementById('edit-sharePreview').textContent=`自分 ${fmt(myShare)} / ${partnerName} ${fmt(herShare)}`;}else document.getElementById('edit-sharePreview').textContent='';}
 function editOnDiffInput(){const amt=parseFloat(document.getElementById('edit-amount').value)||0;if(!amt||!document.getElementById('edit-isSplit').checked){document.getElementById('edit-sharePreview').textContent='';return;}const dw=document.getElementById('edit-diffWho').value;const da=parseFloat(document.getElementById('edit-diffAmt').value)||0;const {myShare,herShare}=calcSharesByDiff(amt,da,dw,editSplitPayer);document.getElementById('edit-sharePreview').textContent=`自分 ${fmt(myShare)} / ${partnerName} ${fmt(herShare)}`;}
 function saveEdit(){
@@ -1435,6 +1643,52 @@ function saveEdit(){
 }
 function deleteTransaction(){if(!editingId) return;if(!confirm('この取引を削除しますか？')) return;transactions=transactions.filter(x=>x.id!==editingId);save();closeModalDirect();updateHeader();renderHistory();renderSplit();renderReviews();updateFixedReminders();}
 let charts={};
+
+function duplicateTransaction(){
+  if(!editingId) return;
+  const t=transactions.find(x=>x.id===editingId);
+  if(!t) return;
+  // 編集モーダルを閉じる
+  closeModalDirect();
+  // 入力タブに切り替え
+  switchTab('home');
+  // 種別を復元
+  setType(t.type==='adjustment'?'expense':t.type);
+  // 基本項目をフォームに反映
+  document.getElementById('amount').value=t.amount;
+  buildCatOptions(document.getElementById('category'),txType,t.category);
+  document.getElementById('memo').value=t.memo||'';
+  document.getElementById('note').value=t.note||'';
+  // 日付は今日
+  document.getElementById('txdate').value=new Date().toISOString().slice(0,10);
+  // 割り勘・調整の復元（支出のみ）
+  if(txType==='expense'){
+    const isAdj=t.isAdj||t.type==='adjustment';
+    const isSplit=!!t.isSplit&&!isAdj;
+    // 調整
+    document.getElementById('isAdj').checked=isAdj;
+    onAdjChange();
+    if(isAdj){document.getElementById('adjRate').value=t.myRate??50;updateAdjPreview();}
+    // 割り勘
+    document.getElementById('isSplit').checked=isSplit;
+    toggleSplitOptions();
+    if(isSplit){
+      setPayer(t.payer||'me');
+      const mode=t.shareMode||'rate';
+      setShareMode(mode);
+      document.getElementById('myRate').value=t.myRate??50;
+      document.getElementById('herRateDisp').textContent=(100-(t.myRate??50))+'%';
+      document.getElementById('diffWho').value=t.diffWho||'me';
+      document.getElementById('diffAmt').value=t.diffAmt||'';
+      document.getElementById('amountWho').value=t.amountWho||'me';
+      document.getElementById('amountShare').value=t.amountShare||'';
+      updateSharePreview();
+    }
+  }
+  showSyncStatus('🔁 複製しました。金額など確認して記録してください','var(--blue)');
+  document.getElementById('amount').focus();
+}
+  
 function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 function getMonthRange(n){const arr=[];for(let i=n-1;i>=0;i--){let m=viewMonth-i,y=viewYear;while(m<0){m+=12;y--;}arr.push({m,y,label:(m+1)+'月'});}return arr;}
 function renderMyCharts(){
@@ -1727,6 +1981,9 @@ if(IS_TEST){
 }else{
   if(!getToken()){showLock();}else{cloudPull();}
 }
+
+
+  
 </script>
 </body>
 </html>
