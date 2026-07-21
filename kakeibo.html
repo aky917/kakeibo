@@ -822,6 +822,8 @@ let editTxType='expense', editSplitPayer='me', editShareMode='rate';
 let viewYear=new Date().getFullYear(), viewMonth=new Date().getMonth();
 let annualYear=new Date().getFullYear();
 let transactions=[], editingId=null;
+const AUTO_NOTES=['(仮計上・要確定)','(自動計上)'];
+function stripAutoNote(note){return AUTO_NOTES.includes(String(note||'').trim())?'':(note||'');}
 let myName='自分', partnerName='彼女';
 let catRates={};
 EXPENSE_CATS.forEach(c=>catRates[c]=50);
@@ -1313,7 +1315,7 @@ function renderHistory(){
   const sortKey=document.getElementById('histSort')?.value||'date_desc';
   const doGroup=(sortKey==='date_desc'||sortKey==='date_asc');
   // 1取引のHTMLを生成
-  const rowHtml=(t)=>{
+  const rowHtml=(t,hideDate)=>{
     if(histMode==='my'){
       let dispAmt,color,sign,note2='';
       if(t.type==='income'){dispAmt=t.amount;color='var(--green)';sign='+';}
@@ -1322,7 +1324,7 @@ function renderHistory(){
       else{dispAmt=t.amount;color='var(--red)';sign='-';}
       const icon=(t.isAdj||t.type==='adjustment')?'🔧':(t.isProvisional?'⏳':(t.category?t.category.slice(0,2):'💴'));
       const bg=(t.isAdj||t.type==='adjustment')?'#FFF8EC':(t.isProvisional?'#FFF0D0':((CAT_COLORS[t.category]||'#888')+'22'));
-      return `<div class="tx-swipe-wrap" data-id="${t.id}"><button class="tx-swipe-del" onclick="event.stopPropagation();deleteById(${t.id})">削除</button><div class="tx-item${t.isProvisional?' provisional':''}" onclick="openEdit(${t.id})"><div class="tx-icon" style="background:${bg}">${icon}</div><div class="tx-info"><div class="tx-memo">${t.memo}${t.isProvisional?'<span class="badge badge-prov">仮</span>':''}</div><div class="tx-sub">${t.date}${t.category?' · '+t.category:''}${note2}</div></div><div class="tx-amount" style="color:${color}">${sign}${fmt(dispAmt)}</div><div style="font-size:13px;color:var(--text3)">›</div></div></div>`;
+      return `<div class="tx-swipe-wrap" data-id="${t.id}"><button class="tx-swipe-del" onclick="event.stopPropagation();deleteById(${t.id})">削除</button><div class="tx-item${t.isProvisional?' provisional':''}" onclick="openEdit(${t.id})"><div class="tx-icon" style="background:${bg}">${icon}</div><div class="tx-info"><div class="tx-memo">${t.memo}${t.isProvisional?'<span class="badge badge-prov">仮</span>':''}</div><div class="tx-sub">${hideDate?'':t.date}${t.category?((hideDate?'':' · ')+t.category):''}${note2}</div></div><div class="tx-amount" style="color:${color}">${sign}${fmt(dispAmt)}</div><div style="font-size:13px;color:var(--text3)">›</div></div></div>`;
     }
     const isAdj=t.isAdj||t.type==='adjustment';
     let badge='';
@@ -1335,7 +1337,7 @@ function renderHistory(){
     const icon=isAdj?'🔧':(t.isProvisional?'⏳':(t.category?t.category.slice(0,2):'💴'));
     const bg=isAdj?'#FFF8EC':(t.isProvisional?'#FFF0D0':((CAT_COLORS[t.category]||'#888')+'22'));
     const modeLine=t.isSplit?`<div class="tx-sub" style="color:var(--purple)">${shareModeLabel(t)}</div>`:'';
-    return `<div class="tx-swipe-wrap" data-id="${t.id}"><button class="tx-swipe-del" onclick="event.stopPropagation();deleteById(${t.id})">削除</button><div class="tx-item${t.isProvisional?' provisional':''}" onclick="openEdit(${t.id})"><div class="tx-icon" style="background:${bg}">${icon}</div><div class="tx-info"><div class="tx-memo">${t.memo}${badge}</div><div class="tx-sub">${t.date}${t.category?' · '+t.category:''}${t.note?' · '+t.note.slice(0,20):''}</div>${modeLine}</div><div class="tx-amount" style="color:${color}">${sign}${fmt(t.amount)}</div><div style="font-size:13px;color:var(--text3)">›</div></div></div>`;
+    return `<div class="tx-swipe-wrap" data-id="${t.id}"><button class="tx-swipe-del" onclick="event.stopPropagation();deleteById(${t.id})">削除</button><div class="tx-item${t.isProvisional?' provisional':''}" onclick="openEdit(${t.id})"><div class="tx-icon" style="background:${bg}">${icon}</div><div class="tx-info"><div class="tx-memo">${t.memo}${badge}</div><div class="tx-sub">${hideDate?'':t.date}${t.category?((hideDate?'':' · ')+t.category):''}${t.note?((hideDate&&!t.category?'':' · ')+t.note.slice(0,20)):''}</div>${modeLine}</div><div class="tx-amount" style="color:${color}">${sign}${fmt(t.amount)}</div><div style="font-size:13px;color:var(--text3)">›</div></div></div>`;
   };
   // 「自分だけ」モードのサマリー
   if(histMode==='my'){
@@ -1357,16 +1359,17 @@ function renderHistory(){
     tx.forEach(t=>{ (groups[t.date]=groups[t.date]||[]).push(t); });
     const dates=Object.keys(groups).sort((a,b)=> sortKey==='date_desc'? b.localeCompare(a) : a.localeCompare(b));
     const wd=['日','月','火','水','木','金','土'];
+    const showYear=new Set(dates.map(x=>x.slice(0,4))).size>1;
     el.innerHTML=dates.map(date=>{
       const d=new Date(date);
-      const label=(d.getMonth()+1)+'月'+d.getDate()+'日('+wd[d.getDay()]+')';
+      const label=(showYear?d.getFullYear()+'年':'')+(d.getMonth()+1)+'月'+d.getDate()+'日('+wd[d.getDay()]+')';
       const dExp=dayExpense(groups[date]);
       const head=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 2px 6px;border-bottom:1px solid var(--border);margin-top:6px"><span style="font-size:12px;font-weight:700;color:var(--text)">${label}</span>${dExp>0?`<span style="font-size:11px;color:var(--text2)">支出 ${fmt(dExp)}</span>`:''}</div>`;
-      return head+groups[date].map(rowHtml).join('');
+      return head+groups[date].map(t=>rowHtml(t,true)).join('');
     }).join('');
   }else{
     // グルーピングなし（金額順・カテゴリ順）
-    el.innerHTML=tx.map(rowHtml).join('');
+    el.innerHTML=tx.map(t=>rowHtml(t,false)).join('');
   }
   initSwipe();
 }
@@ -1559,7 +1562,7 @@ function openEdit(id){
   document.getElementById('edit-amount').value=t.amount;
   document.getElementById('edit-date').value=t.date;
   document.getElementById('edit-memo').value=t.memo;
-  document.getElementById('edit-note').value=t.note||'';
+  document.getElementById('edit-note').value=stripAutoNote(t.note);
   const isExpense=editTxType==='expense';
   document.getElementById('edit-adjSection').style.display=isExpense?'':'none';
   document.getElementById('edit-splitSection').style.display=isExpense?'':'none';
@@ -1639,7 +1642,7 @@ function saveEdit(){
   if(isAdj){myRate=parseInt(document.getElementById('edit-adjRate').value)||50;myShare=Math.ceil(amount*myRate/100);herShare=Math.floor(amount*(100-myRate)/100);}
   const idx=transactions.findIndex(x=>x.id===editingId);
   const orig=transactions[idx];
-  transactions[idx]={id:editingId,type:editTxType,amount,category:document.getElementById('edit-category').value,date:document.getElementById('edit-date').value,memo:document.getElementById('edit-memo').value||document.getElementById('edit-category').value,note:document.getElementById('edit-note').value,isSplit,isAdj,payer:isSplit?editSplitPayer:null,myShare,herShare,myRate,shareMode:isSplit?editShareMode:null,diffAmt:(isSplit&&editShareMode==='diff')?(parseFloat(document.getElementById('edit-diffAmt').value)||0):null,diffWho:(isSplit&&editShareMode==='diff')?document.getElementById('edit-diffWho').value:null,amountShare:(isSplit&&editShareMode==='amount')?(parseFloat(document.getElementById('edit-amountShare').value)||0):null,amountWho:(isSplit&&editShareMode==='amount')?document.getElementById('edit-amountWho').value:null,fixedRef:orig.fixedRef,isProvisional:false};  save();closeModalDirect();updateHeader();renderHistory();renderSplit();renderReviews();updateFixedReminders();
+  transactions[idx]={id:editingId,type:editTxType,amount,category:document.getElementById('edit-category').value,date:document.getElementById('edit-date').value,memo:document.getElementById('edit-memo').value||document.getElementById('edit-category').value,note:stripAutoNote(document.getElementById('edit-note').value),isSplit,isAdj,payer:isSplit?editSplitPayer:null,myShare,herShare,myRate,shareMode:isSplit?editShareMode:null,diffAmt:(isSplit&&editShareMode==='diff')?(parseFloat(document.getElementById('edit-diffAmt').value)||0):null,diffWho:(isSplit&&editShareMode==='diff')?document.getElementById('edit-diffWho').value:null,amountShare:(isSplit&&editShareMode==='amount')?(parseFloat(document.getElementById('edit-amountShare').value)||0):null,amountWho:(isSplit&&editShareMode==='amount')?document.getElementById('edit-amountWho').value:null,fixedRef:orig.fixedRef,isProvisional:false};  save();closeModalDirect();updateHeader();renderHistory();renderSplit();renderReviews();updateFixedReminders();
 }
 function deleteTransaction(){if(!editingId) return;if(!confirm('この取引を削除しますか？')) return;transactions=transactions.filter(x=>x.id!==editingId);save();closeModalDirect();updateHeader();renderHistory();renderSplit();renderReviews();updateFixedReminders();}
 let charts={};
