@@ -1,7 +1,7 @@
 <!--
 ============================================================
 Kakeibo
-Version  : v3.0.0
+Version  : v3.0.2
 Codename : Insight Update
 Updated  : 2026-09-16
 Author   : 秋山伊織 + Microsoft Copilot
@@ -25,7 +25,7 @@ Change Log
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>kakeibo v3.0.0</title>
+<title>kakeibo v3.0.2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -38,7 +38,7 @@ Change Log
 <link rel="icon" type="image/png" href="./icon-192.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js">
 /* ===== Kakeibo v3.0.0 Insight Update ===== */
-const APP_INFO={name:'Kakeibo',version:'3.0.0',codename:'Insight Update',updated:'2026-09-16',storageVersion:8};
+const APP_INFO={name:'Kakeibo',version:'3.0.2',codename:'Insight Update',updated:'2026-09-29',storageVersion:8};
 const V3_KEYS={categories:SP+'kakeibo_categories_v3',templates:SP+'kakeibo_templates_v1',specialTags:SP+'kakeibo_special_tags_v1'};
 const V3_DEFAULT_COLORS=['#387158','#3A7FCC','#7F77DD','#D05830','#D98A0A','#D4537E','#5580AA','#888780'];
 const V3_DEFAULT_CATS=EXPENSE_CATS.map((label,i)=>({id:'legacy_'+i,type:'expense',name:catLabel(label),icon:String(label).split(/\s+/)[0]||'●',color:CAT_COLORS[label]||V3_DEFAULT_COLORS[i%V3_DEFAULT_COLORS.length],archived:false,order:i,legacyLabel:label,rate:Number(catRates[label]??50)}));
@@ -55,7 +55,7 @@ const _v3buildCatOptions=buildCatOptions;buildCatOptions=function(sel,type,val){
 function v3RefreshCategoryUI(){buildCatOptions(document.getElementById('category'),txType,document.getElementById('category')?.value);buildCatOptions(document.getElementById('edit-category'),editTxType,document.getElementById('edit-category')?.value);const f=document.getElementById('histFilterCat');if(f){delete f.dataset.built;buildHistCatFilter()}buildCatRateTable();buildBudgetInputTable();v3RenderCategoryManager()}
 // ID collision fix: legacy implementation converted Japanese category names to nearly identical underscore IDs.
 buildCatRateTable=function(){const host=document.getElementById('catRateTable');if(!host)return;host.innerHTML=v3Categories.filter(c=>c.type==='expense'&&!c.archived).map(c=>`<div class="cat-rate-row"><span class="v3-color" style="background:${c.color};width:20px;height:20px"></span><span class="cat-name">${v3Esc(v3CatLabel(c))}</span><input type="number" class="cat-rate-input" data-cat-id="${c.id}" min="0" max="100" value="${c.rate}" oninput="this.nextElementSibling.textContent='相手 '+(100-Math.max(0,Math.min(100,Number(this.value)||0)))+'%'"><span style="font-size:11px;color:var(--text3);min-width:52px;text-align:right">相手 ${100-c.rate}%</span></div>`).join('')};
-saveCatRates=function(){document.querySelectorAll('#catRateTable [data-cat-id]').forEach(el=>{const c=v3Categories.find(x=>x.id===el.dataset.catId);if(c)c.rate=Math.max(0,Math.min(100,Number(el.value)||0))});v3SaveCategories();showSuccessToast('負担率を保存しました')};
+saveCatRates=function(){document.querySelectorAll('#catRateTable [data-cat-id]').forEach(el=>{const c=v3Categories.find(x=>x.id===el.dataset.catId);if(c)c.rate=Math.max(0,Math.min(100,Number(el.value)||0))});v3SaveCategories();if(txType==='expense'&&document.getElementById('category')?.value)applyDefaultRate();showSuccessToast('負担率を保存しました（現在の新規入力にも反映済み）')};
 applyDefaultRate=function(){const c=v3FindCat(document.getElementById('category').value),rate=Number(c?.rate??50);document.getElementById('myRate').value=rate;document.getElementById('herRateDisp').textContent=(100-rate)+'%';updateSharePreview()};
 function v3CategorySection(){return `<div class="card" id="v3CategoryCard"><div class="section-title">カテゴリ管理</div><p style="font-size:12px;margin-bottom:10px">追加・編集・色・アイコン・並び順・アーカイブを管理します。</p><div id="v3CategoryList" class="v3-stack"></div><div class="v3-divider"></div><div class="v3-form"><input id="v3CatIcon" class="v3-icon-input" value="🏷️" maxlength="4"><input id="v3CatName" placeholder="カテゴリ名"></div><div class="v3-row" style="margin-top:8px"><input id="v3CatColor" class="v3-swatch" type="color" value="#387158"><button class="btn primary" style="margin:0" onclick="v3AddCategory()">カテゴリを追加</button></div></div>`}
 function v3RenderCategoryManager(){const host=document.getElementById('v3CategoryList');if(!host)return;host.innerHTML=v3Categories.filter(c=>c.type==='expense').map((c,i)=>`<div class="v3-row ${c.archived?'v3-archived':''}"><span class="v3-color" style="background:${c.color}"></span><div class="v3-row-main"><div class="v3-title">${v3Esc(v3CatLabel(c))}</div><div class="v3-sub">負担率 ${c.rate}%${c.archived?'・アーカイブ':''}</div></div><div class="v3-actions"><button class="btn v3-mini" onclick="v3MoveCategory('${c.id}',-1)">↑</button><button class="btn v3-mini" onclick="v3MoveCategory('${c.id}',1)">↓</button><button class="btn v3-mini" onclick="v3EditCategory('${c.id}')">編集</button><button class="btn v3-mini" onclick="v3ArchiveCategory('${c.id}')">${c.archived?'復帰':'保管'}</button><button class="btn v3-mini v3-danger" onclick="v3DeleteCategory('${c.id}')">削除</button></div></div>`).join('')}
@@ -772,7 +772,7 @@ body.p2c-sheet-open .p2c-safe{visibility:hidden}body.p2c-sheet-open #fixedRemind
     </div>
     <div class="card">
       <div class="section-title">カテゴリ別 デフォルト負担率（自分 %）</div>
-      <p style="font-size:12px;color:var(--text2);margin-bottom:.75rem">以降の新規入力に自動適用。過去データには影響しません。</p>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:.75rem">以降の新規入力に自動適用します。既存明細は各明細の編集画面から変更できます。</p>
       <div id="catRateTable"></div>
       <button class="btn primary" onclick="saveCatRates()">保存する</button>
     </div>
@@ -845,7 +845,7 @@ body.p2c-sheet-open .p2c-safe{visibility:hidden}body.p2c-sheet-open #fixedRemind
           </div>
         </div>
         <div class="sw"><div class="sw-knob"></div></div>
-        <input type="checkbox" id="edit-isSplit" onchange="editToggleSplit()" style="display:none">
+        <input type="checkbox" id="edit-isSplit" onchange="editToggleSplit()" onclick="event.stopPropagation()" style="display:none">
       </div>
       <div id="edit-splitOptions" style="display:none">
         <div class="section-title" style="margin-bottom:6px">誰が払った？</div>
@@ -899,7 +899,7 @@ body.p2c-sheet-open .p2c-safe{visibility:hidden}body.p2c-sheet-open #fixedRemind
           </div>
         </div>
         <div class="sw"><div class="sw-knob"></div></div>
-        <input type="checkbox" id="edit-isAdj" onchange="editOnAdjChange()" style="display:none">
+        <input type="checkbox" id="edit-isAdj" onchange="editOnAdjChange()" onclick="event.stopPropagation()" style="display:none">
       </div>
 
       <div id="edit-adjRateSection" style="display:none;margin-bottom:8px">
@@ -1053,6 +1053,7 @@ function fmtS(n){const a=Math.abs(n);return (n<0?'-':'')+(a>=10000?'\u00a5'+(a/1
 function monthTx(y,m){const vy=y??viewYear,vm=m??viewMonth;return transactions.filter(t=>{const d=parseLocalDate(t.date);return d.getFullYear()===vy&&d.getMonth()===vm;});}
 function realExp(txList){return txList.reduce((s,t)=>{if(t.type==='income') return s;if(t.isAdj||t.type==='adjustment') return s+(t.myShare||0);if(t.isSplit) return s+(t.myShare||0);return s+t.amount;},0);}
 function calcShares(amount, myRatePct, payer){const r=Math.max(0,Math.min(100,myRatePct??50))/100;if(payer==='me'){const herShare=Math.floor(amount*(1-r));return {myShare:amount-herShare,herShare};}else{const myShare=Math.ceil(amount*r);return {myShare,herShare:amount-myShare};}}
+function readPercent(id,fallback=50){const el=document.getElementById(id),raw=el?String(el.value).trim():'';if(raw==='')return fallback;const n=Number(raw);return Number.isFinite(n)?Math.max(0,Math.min(100,n)):fallback;}
 function calcSharesByDiff(amount, diffAmt, diffWho, payer){const half=amount/2;let myShare,herShare;if(diffWho==='me'){myShare=Math.round(half+diffAmt/2);herShare=amount-myShare;}else{herShare=Math.round(half+diffAmt/2);myShare=amount-herShare;}if(payer==='me'){herShare=Math.floor(herShare);myShare=amount-herShare;}else{myShare=Math.ceil(myShare);herShare=amount-myShare;}return {myShare,herShare,myRate:Math.round(myShare/amount*100)};}
 function settlementKey(y=viewYear,m=viewMonth){return SP+'kakeibo_settled_'+y+'-'+String(m+1).padStart(2,'0');}
 function isMonthSettled(y=viewYear,m=viewMonth){return localStorage.getItem(settlementKey(y,m))==='1';}
@@ -1327,16 +1328,16 @@ function setDateQuick(offset){
   
 function onRateInput(){const v=parseInt(document.getElementById('myRate').value)||0;document.getElementById('herRateDisp').textContent=(100-v)+'%';updateSharePreview();}
 function onDiffInput(){updateSharePreview();}
-function updateAdjPreview(){const amt=getAmountValue()||0;const rate=parseInt(document.getElementById('adjRate').value)||50;const prev=document.getElementById('adjPreview');if(!document.getElementById('isAdj').checked||!amt){prev.textContent='-';return;}prev.textContent=`自分+${fmt(Math.ceil(amt*rate/100))} / ${partnerName}-${fmt(Math.floor(amt*(100-rate)/100))}`;}
-function updateSharePreview(){const amt=getAmountValue()||0;const el=document.getElementById('sharePreview');if(!amt||!document.getElementById('isSplit').checked){el.textContent='';return;}let myShare,herShare;if(shareMode==='rate'){const rate=parseInt(document.getElementById('myRate').value)||50;({myShare,herShare}=calcShares(amt,rate,splitPayer));}else if(shareMode==='diff'){const dw=document.getElementById('diffWho').value;const da=parseFloat(document.getElementById('diffAmt').value)||0;({myShare,herShare}=calcSharesByDiff(amt,da,dw,splitPayer));}else{const aw=document.getElementById('amountWho').value;const av=parseFloat(document.getElementById('amountShare').value)||0;({myShare,herShare}=calcSharesByAmount(amt,av,aw));}el.textContent=`自分 ${fmt(myShare)} / ${partnerName} ${fmt(herShare)}`;}
+function updateAdjPreview(){const amt=getAmountValue()||0;const rate=readPercent('adjRate',50);const prev=document.getElementById('adjPreview');if(!document.getElementById('isAdj').checked||!amt){prev.textContent='-';return;}prev.textContent=`自分+${fmt(Math.ceil(amt*rate/100))} / ${partnerName}-${fmt(Math.floor(amt*(100-rate)/100))}`;}
+function updateSharePreview(){const amt=getAmountValue()||0;const el=document.getElementById('sharePreview');if(!amt||!document.getElementById('isSplit').checked){el.textContent='';return;}let myShare,herShare;if(shareMode==='rate'){const rate=readPercent('myRate',50);({myShare,herShare}=calcShares(amt,rate,splitPayer));}else if(shareMode==='diff'){const dw=document.getElementById('diffWho').value;const da=parseFloat(document.getElementById('diffAmt').value)||0;({myShare,herShare}=calcSharesByDiff(amt,da,dw,splitPayer));}else{const aw=document.getElementById('amountWho').value;const av=parseFloat(document.getElementById('amountShare').value)||0;({myShare,herShare}=calcSharesByAmount(amt,av,aw));}el.textContent=`自分 ${fmt(myShare)} / ${partnerName} ${fmt(herShare)}`;}
 function addTransaction(){
   const amount=getAmountValue();
   if(!amount||isNaN(amount)||amount<=0){alert('金額を入力してください（例: 1200 または 1200+800）');return;}
   const isAdj=document.getElementById('isAdj').checked&&txType==='expense';
   const isSplit=!isAdj&&document.getElementById('isSplit').checked&&txType==='expense';
   let myShare=null,herShare=null,myRate=null;
-  if(isSplit){if(shareMode==='rate'){myRate=parseInt(document.getElementById('myRate').value)||50;({myShare,herShare}=calcShares(amount,myRate,splitPayer));}else if(shareMode==='diff'){const dw=document.getElementById('diffWho').value;const da=parseFloat(document.getElementById('diffAmt').value)||0;({myShare,herShare,myRate}=calcSharesByDiff(amount,da,dw,splitPayer));}else{const aw=document.getElementById('amountWho').value;const av=parseFloat(document.getElementById('amountShare').value)||0;({myShare,herShare,myRate}=calcSharesByAmount(amount,av,aw));}}
-  if(isAdj){myRate=parseInt(document.getElementById('adjRate').value)||50;myShare=Math.ceil(amount*myRate/100);herShare=Math.floor(amount*(100-myRate)/100);}
+  if(isSplit){if(shareMode==='rate'){myRate=readPercent('myRate',50);({myShare,herShare}=calcShares(amount,myRate,splitPayer));}else if(shareMode==='diff'){const dw=document.getElementById('diffWho').value;const da=parseFloat(document.getElementById('diffAmt').value)||0;({myShare,herShare,myRate}=calcSharesByDiff(amount,da,dw,splitPayer));}else{const aw=document.getElementById('amountWho').value;const av=parseFloat(document.getElementById('amountShare').value)||0;({myShare,herShare,myRate}=calcSharesByAmount(amount,av,aw));}}
+  if(isAdj){myRate=readPercent('adjRate',50);myShare=Math.ceil(amount*myRate/100);herShare=Math.floor(amount*(100-myRate)/100);}
   const newTx={id:nextId(),type:txType,amount,category:document.getElementById('category').value,date:document.getElementById('txdate').value,memo:document.getElementById('memo').value||document.getElementById('category').value,note:document.getElementById('note').value,isSplit,isAdj,payer:isSplit?splitPayer:null,myShare,herShare,myRate,shareMode:isSplit?shareMode:null,diffAmt:(isSplit&&shareMode==='diff')?(parseFloat(document.getElementById('diffAmt').value)||0):null,diffWho:(isSplit&&shareMode==='diff')?document.getElementById('diffWho').value:null,amountShare:(isSplit&&shareMode==='amount')?(parseFloat(document.getElementById('amountShare').value)||0):null,amountWho:(isSplit&&shareMode==='amount')?document.getElementById('amountWho').value:null};transactions.push(newTx);if(!save()){transactions.pop();return;}markMonthUnsettledForTx(newTx);
   document.getElementById('amount').value='';
   const ac=document.getElementById('amountCalc');if(ac) ac.textContent='';
@@ -1806,12 +1807,13 @@ function openEdit(id){
 }
 function closeModalDirect(){document.getElementById('editModal').style.display='none';editingId=null;}
 function editSetType(t){editTxType=t;document.getElementById('edit-btn-income').className='toggle-btn'+(t==='income'?' active income':'');document.getElementById('edit-btn-expense').className='toggle-btn'+(t==='expense'?' active expense':'');document.getElementById('edit-adjSection').style.display=t==='expense'?'':'none';document.getElementById('edit-splitSection').style.display=t==='expense'?'':'none';buildCatOptions(document.getElementById('edit-category'),t);}
-function editSetPayer(p){editSplitPayer=p;document.getElementById('edit-btn-me').className='toggle-btn'+(p==='me'?' active me':'');document.getElementById('edit-btn-her').className='toggle-btn'+(p==='her'?' active her':'');editOnRateInput();}
-function editSetShareMode(m){editShareMode=m;document.getElementById('edit-mode-rate').className='toggle-btn'+(m==='rate'?' active sel':'');document.getElementById('edit-mode-diff').className='toggle-btn'+(m==='diff'?' active sel':'');document.getElementById('edit-mode-amount').className='toggle-btn'+(m==='amount'?' active sel':'');document.getElementById('edit-share-rate-input').style.display=m==='rate'?'':'none';document.getElementById('edit-share-diff-input').style.display=m==='diff'?'':'none';document.getElementById('edit-share-amount-input').style.display=m==='amount'?'':'none';}
-function editOnAmountShareInput(){const amt=parseFloat(document.getElementById('edit-amount').value)||0;if(!amt||!document.getElementById('edit-isSplit').checked){document.getElementById('edit-sharePreview').textContent='';return;}const aw=document.getElementById('edit-amountWho').value;const av=parseFloat(document.getElementById('edit-amountShare').value)||0;const {myShare,herShare}=calcSharesByAmount(amt,av,aw);document.getElementById('edit-sharePreview').textContent=`自分 ${fmt(myShare)} / ${partnerName} ${fmt(herShare)}`;}function editToggleSplit(){const checked=document.getElementById('edit-isSplit').checked;document.getElementById('edit-splitOptions').style.display=checked?'':'none';document.getElementById('edit-splitWrap').className='tg split'+(checked?' on':'');document.getElementById('edit-splitSub').textContent=checked?'パートナーと分担する':'パートナーと分担しない';if(checked){document.getElementById('edit-isAdj').checked=false;document.getElementById('edit-adjRateSection').style.display='none';document.getElementById('edit-adjWrap').className='tg adj';document.getElementById('edit-adjSub').textContent='割り勘済み費用の自己使用分';}}
+function editSetPayer(p){editSplitPayer=p;document.getElementById('edit-btn-me').className='toggle-btn'+(p==='me'?' active me':'');document.getElementById('edit-btn-her').className='toggle-btn'+(p==='her'?' active her':'');editRefreshSharePreview();}
+function editSetShareMode(m){editShareMode=m;document.getElementById('edit-mode-rate').className='toggle-btn'+(m==='rate'?' active sel':'');document.getElementById('edit-mode-diff').className='toggle-btn'+(m==='diff'?' active sel':'');document.getElementById('edit-mode-amount').className='toggle-btn'+(m==='amount'?' active sel':'');document.getElementById('edit-share-rate-input').style.display=m==='rate'?'':'none';document.getElementById('edit-share-diff-input').style.display=m==='diff'?'':'none';document.getElementById('edit-share-amount-input').style.display=m==='amount'?'':'none';editRefreshSharePreview();}
+function editRefreshSharePreview(){if(editShareMode==='diff')editOnDiffInput();else if(editShareMode==='amount')editOnAmountShareInput();else editOnRateInput();}
+function editOnAmountShareInput(){const amt=parseFloat(document.getElementById('edit-amount').value)||0;if(!amt||!document.getElementById('edit-isSplit').checked){document.getElementById('edit-sharePreview').textContent='';return;}const aw=document.getElementById('edit-amountWho').value;const av=parseFloat(document.getElementById('edit-amountShare').value)||0;const {myShare,herShare}=calcSharesByAmount(amt,av,aw);document.getElementById('edit-sharePreview').textContent=`自分 ${fmt(myShare)} / ${partnerName} ${fmt(herShare)}`;}function editToggleSplit(){const checked=document.getElementById('edit-isSplit').checked;document.getElementById('edit-splitOptions').style.display=checked?'':'none';document.getElementById('edit-splitWrap').className='tg split'+(checked?' on':'');document.getElementById('edit-splitSub').textContent=checked?'パートナーと分担する':'パートナーと分担しない';if(checked){document.getElementById('edit-isAdj').checked=false;document.getElementById('edit-adjRateSection').style.display='none';document.getElementById('edit-adjWrap').className='tg adj';document.getElementById('edit-adjSub').textContent='割り勘済み費用の自己使用分';}editRefreshSharePreview();}
 function editOnAdjChange(){const checked=document.getElementById('edit-isAdj').checked;document.getElementById('edit-adjRateSection').style.display=checked?'':'none';document.getElementById('edit-adjWrap').className='tg adj'+(checked?' on':'');document.getElementById('edit-adjSub').textContent=checked?'調整を適用する':'割り勘済み費用の自己使用分';if(checked){document.getElementById('edit-isSplit').checked=false;document.getElementById('edit-splitOptions').style.display='none';document.getElementById('edit-splitWrap').className='tg split';document.getElementById('edit-splitSub').textContent='パートナーと分担しない';}editUpdateAdjPreview();}
-function editUpdateAdjPreview(){const amt=parseFloat(document.getElementById('edit-amount').value)||0;const rate=parseInt(document.getElementById('edit-adjRate').value)||50;const prev=document.getElementById('edit-adjPreview');if(!document.getElementById('edit-isAdj').checked||!amt){prev.textContent='-';return;}prev.textContent=`自分+${fmt(Math.ceil(amt*rate/100))} / ${partnerName}-${fmt(Math.floor(amt*(100-rate)/100))}`;}
-function editOnAmountInput(){editOnRateInput();editUpdateAdjPreview();}
+function editUpdateAdjPreview(){const amt=parseFloat(document.getElementById('edit-amount').value)||0;const rate=readPercent('edit-adjRate',50);const prev=document.getElementById('edit-adjPreview');if(!document.getElementById('edit-isAdj').checked||!amt){prev.textContent='-';return;}prev.textContent=`自分+${fmt(Math.ceil(amt*rate/100))} / ${partnerName}-${fmt(Math.floor(amt*(100-rate)/100))}`;}
+function editOnAmountInput(){editRefreshSharePreview();editUpdateAdjPreview();}
 
 function appendOp(op){
   const el=document.getElementById('amount');
@@ -1844,11 +1846,11 @@ function saveEdit(){
   const isAdj=document.getElementById('edit-isAdj').checked&&editTxType==='expense';
   const isSplit=!isAdj&&document.getElementById('edit-isSplit').checked&&editTxType==='expense';
   let myShare=null,herShare=null,myRate=null;
-    if(isSplit){if(editShareMode==='rate'){myRate=parseInt(document.getElementById('edit-myRate').value)||50;({myShare,herShare}=calcShares(amount,myRate,editSplitPayer));}else if(editShareMode==='diff'){const dw=document.getElementById('edit-diffWho').value;const da=parseFloat(document.getElementById('edit-diffAmt').value)||0;({myShare,herShare,myRate}=calcSharesByDiff(amount,da,dw,editSplitPayer));}else{const aw=document.getElementById('edit-amountWho').value;const av=parseFloat(document.getElementById('edit-amountShare').value)||0;({myShare,herShare,myRate}=calcSharesByAmount(amount,av,aw));}}
-  if(isAdj){myRate=parseInt(document.getElementById('edit-adjRate').value)||50;myShare=Math.ceil(amount*myRate/100);herShare=Math.floor(amount*(100-myRate)/100);}
+    if(isSplit){if(editShareMode==='rate'){myRate=readPercent('edit-myRate',50);({myShare,herShare}=calcShares(amount,myRate,editSplitPayer));}else if(editShareMode==='diff'){const dw=document.getElementById('edit-diffWho').value;const da=parseFloat(document.getElementById('edit-diffAmt').value)||0;({myShare,herShare,myRate}=calcSharesByDiff(amount,da,dw,editSplitPayer));}else{const aw=document.getElementById('edit-amountWho').value;const av=parseFloat(document.getElementById('edit-amountShare').value)||0;({myShare,herShare,myRate}=calcSharesByAmount(amount,av,aw));}}
+  if(isAdj){myRate=readPercent('edit-adjRate',50);myShare=Math.ceil(amount*myRate/100);herShare=Math.floor(amount*(100-myRate)/100);}
   const idx=transactions.findIndex(x=>x.id===editingId);
   const orig=transactions[idx],origSnapshot={...orig};
-  transactions[idx]={id:editingId,type:editTxType,amount,category:document.getElementById('edit-category').value,date:document.getElementById('edit-date').value,memo:document.getElementById('edit-memo').value||document.getElementById('edit-category').value,note:stripAutoNote(document.getElementById('edit-note').value),isSplit,isAdj,payer:isSplit?editSplitPayer:null,myShare,herShare,myRate,shareMode:isSplit?editShareMode:null,diffAmt:(isSplit&&editShareMode==='diff')?(parseFloat(document.getElementById('edit-diffAmt').value)||0):null,diffWho:(isSplit&&editShareMode==='diff')?document.getElementById('edit-diffWho').value:null,amountShare:(isSplit&&editShareMode==='amount')?(parseFloat(document.getElementById('edit-amountShare').value)||0):null,amountWho:(isSplit&&editShareMode==='amount')?document.getElementById('edit-amountWho').value:null,fixedRef:orig.fixedRef,isProvisional:false};if(!save()){transactions[idx]=origSnapshot;return;}markMonthUnsettledForTx(orig);markMonthUnsettledForTx(transactions[idx]);closeModalDirect();updateHeader();renderHistory();renderSplit();renderReviews();updateFixedReminders();
+  transactions[idx]={id:editingId,type:editTxType,amount,category:document.getElementById('edit-category').value,date:document.getElementById('edit-date').value,memo:document.getElementById('edit-memo').value||document.getElementById('edit-category').value,note:stripAutoNote(document.getElementById('edit-note').value),isSplit,isAdj,payer:isSplit?editSplitPayer:null,myShare,herShare,myRate,shareMode:isSplit?editShareMode:null,diffAmt:(isSplit&&editShareMode==='diff')?(parseFloat(document.getElementById('edit-diffAmt').value)||0):null,diffWho:(isSplit&&editShareMode==='diff')?document.getElementById('edit-diffWho').value:null,amountShare:(isSplit&&editShareMode==='amount')?(parseFloat(document.getElementById('edit-amountShare').value)||0):null,amountWho:(isSplit&&editShareMode==='amount')?document.getElementById('edit-amountWho').value:null,fixedId:orig.fixedId,fixedRef:orig.fixedRef,source:orig.source,isProvisional:false};if(!save()){transactions[idx]=origSnapshot;return;}markMonthUnsettledForTx(orig);markMonthUnsettledForTx(transactions[idx]);closeModalDirect();updateHeader();renderHistory();renderSplit();renderReviews();updateFixedReminders();renderP2C();if(document.getElementById('page-budget').classList.contains('active'))renderBudget();showSuccessToast('変更を保存しました');
 }
 function deleteTransaction(){if(!editingId)return;if(!confirm('この取引を削除しますか？'))return;const removed=transactions.find(x=>x.id===editingId),before=transactions.slice();transactions=transactions.filter(x=>x.id!==editingId);if(!save()){transactions=before;return;}markMonthUnsettledForTx(removed);closeModalDirect();updateHeader();renderHistory();renderSplit();renderReviews();updateFixedReminders();}
 let charts={};
@@ -2109,7 +2111,7 @@ function saveFixed(){
   if(!amount){alert('金額を入力してください');return;}
   const arr=loadFixed(),oldItem=editingFixedIdx!=null?arr[editingFixedIdx]:null;
   const isSplit=document.getElementById('fixedIsSplit').checked,cycle=document.getElementById('fixedCycle').value||'monthly';
-  const item={id:oldItem?.id||newFixedId(),name,amount,cat:document.getElementById('fixedCat').value,billingDay:document.getElementById('fixedBillingDay').value.trim(),startYm:document.getElementById('fixedStartYm').value||'',mode:document.getElementById('fixedMode').value||'remind',cycle,payMonth:(cycle==='yearly'||cycle==='multiYear')?(parseInt(document.getElementById('fixedPayMonth').value)||1):null,everyYears:cycle==='multiYear'?(parseInt(document.getElementById('v3EveryYears')?.value)||2):null,note:document.getElementById('fixedNote').value.trim(),skippedYM:oldItem?(oldItem.skippedYM||[]):[],isSplit,payer:isSplit?fixedSplitPayer:null,myRate:isSplit?(parseInt(document.getElementById('fixedMyRate').value)||50):null};
+  const item={id:oldItem?.id||newFixedId(),name,amount,cat:document.getElementById('fixedCat').value,billingDay:document.getElementById('fixedBillingDay').value.trim(),startYm:document.getElementById('fixedStartYm').value||'',mode:document.getElementById('fixedMode').value||'remind',cycle,payMonth:(cycle==='yearly'||cycle==='multiYear')?(parseInt(document.getElementById('fixedPayMonth').value)||1):null,everyYears:cycle==='multiYear'?(parseInt(document.getElementById('v3EveryYears')?.value)||2):null,note:document.getElementById('fixedNote').value.trim(),skippedYM:oldItem?(oldItem.skippedYM||[]):[],isSplit,payer:isSplit?fixedSplitPayer:null,myRate:isSplit?(readPercent('fixedMyRate',50)):null};
   if(oldItem)arr[editingFixedIdx]=item;else arr.push(item);
   saveFixedData(arr,{sync:false});
   migrateFixedData();
