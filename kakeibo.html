@@ -8,15 +8,15 @@ Kakeibo delivery requirements (must be retained)
 - Do not require separate source files from the user.
 
 Kakeibo
-Version  : v3.0.6
-Codename : iPhone PDF File Save
+Version  : v3.0.7
+Codename : No Service Worker
 Updated  : 2026-09-29
 Author   : 秋山伊織 + Microsoft Copilot
 
 Change Log
-- Replaced printing with direct PDF generation for iPhone Safari.
-- Added iOS share sheet support so PDF can be saved to the Files app.
-- Added PDF preview fallback when file sharing is unavailable.
+- Service Worker registration removed.
+- Existing Service Workers are automatically unregistered and Cache Storage is cleared.
+- localStorage data remains unchanged.
 - Added previous-month budget, actual, variance, and three-month average.
 - Added per-category actual adoption and bulk copy from previous budget or actual.
 - Actual copy rounds up to the nearest 1,000 yen.
@@ -32,17 +32,11 @@ Change Log
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>kakeibo v3.0.6</title>
+<title>kakeibo v3.0.7</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="manifest" href="./manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="kakeibo">
 <meta name="theme-color" content="#111110">
-<link rel="apple-touch-icon" href="./icon-180.png">
-<link rel="icon" type="image/png" href="./icon-192.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js">
 /* ===== Kakeibo v3.0.0 Insight Update ===== */
 const APP_INFO={name:'Kakeibo',version:'3.0.0',codename:'Insight Update',updated:'2026-09-16',storageVersion:8};
@@ -99,7 +93,7 @@ const _v3openFixedForm=openFixedForm;openFixedForm=function(idx=null){_v3openFix
 // Cloud payload extensions
 const _v3cloudPush=cloudPush;cloudPush=async function(){localStorage.setItem(SP+'kakeibo_v3_meta',JSON.stringify({categories:v3Categories,templates:v3LoadTemplates(),specialTags:v3GetSpecialTags()}));return _v3cloudPush()};
 // UI installation
-function v3InstallUI(){const settings=document.getElementById('page-settings');if(settings&&!document.getElementById('v3CategoryCard')){settings.insertAdjacentHTML('afterbegin',v3CategorySection()+v3TemplateSection()+v3SpecialSection());settings.insertAdjacentHTML('beforeend',`<div class="v3-version">Kakeibo v${APP_INFO.version} ${APP_INFO.codename}・${APP_INFO.updated}</div>`)}const tags=document.getElementById('v3SpecialTags');if(tags)tags.value=v3GetSpecialTags().join(' ');const cycle=document.getElementById('fixedCycle');if(cycle&&!cycle.querySelector('[value="multiYear"]'))cycle.insertAdjacentHTML('beforeend','<option value="multiYear">複数年ごと</option>');const payWrap=document.getElementById('fixedPayMonthWrap');if(payWrap&&!document.getElementById('v3EveryYearsWrap'))payWrap.insertAdjacentHTML('beforebegin','<div id="v3EveryYearsWrap" style="display:none"><label>何年ごと</label><input id="v3EveryYears" type="number" min="2" max="20" value="2" inputmode="numeric"></div>');const fixedPage=document.getElementById('page-fixed');if(fixedPage&&!document.getElementById('v3FutureFixed'))fixedPage.insertAdjacentHTML('afterbegin','<div class="card"><div class="section-title">将来の固定費予定</div><div id="v3FutureFixed"></div></div>');const analysis=document.getElementById('page-analysis-hub');if(analysis&&!document.getElementById('page-insights')){analysis.querySelector('.p2c-hub-grid')?.insertAdjacentHTML('beforeend','<button class="p2c-hub-card" onclick="p2cGo(\'insights\')"><div class="p2c-hub-icon">◈</div><div class="p2c-hub-title">インサイト</div><div class="p2c-hub-sub">タグ・前月比較・レビュー</div></button>');analysis.insertAdjacentHTML('afterend','<div id="page-insights" class="page"><div id="v3InsightsBody"></div></div>');p2cPages.insights='page-insights'}v3RenderCategoryManager();v3RenderTemplates();v3RenderTemplateStrip();v3RenderFutureFixed();v3RenderInsights()}
+function v3InstallUI(){const settings=document.getElementById('page-settings');if(settings&&!document.getElementById('v3CategoryCard')){settings.insertAdjacentHTML('afterbegin',v3CategorySection()+v3TemplateSection()+v3SpecialSection());settings.insertAdjacentHTML('beforeend',`<div class="v3-version">Kakeibo v3.0.7 No Service Worker・2026-10-08</div>`)}const tags=document.getElementById('v3SpecialTags');if(tags)tags.value=v3GetSpecialTags().join(' ');const cycle=document.getElementById('fixedCycle');if(cycle&&!cycle.querySelector('[value="multiYear"]'))cycle.insertAdjacentHTML('beforeend','<option value="multiYear">複数年ごと</option>');const payWrap=document.getElementById('fixedPayMonthWrap');if(payWrap&&!document.getElementById('v3EveryYearsWrap'))payWrap.insertAdjacentHTML('beforebegin','<div id="v3EveryYearsWrap" style="display:none"><label>何年ごと</label><input id="v3EveryYears" type="number" min="2" max="20" value="2" inputmode="numeric"></div>');const fixedPage=document.getElementById('page-fixed');if(fixedPage&&!document.getElementById('v3FutureFixed'))fixedPage.insertAdjacentHTML('afterbegin','<div class="card"><div class="section-title">将来の固定費予定</div><div id="v3FutureFixed"></div></div>');const analysis=document.getElementById('page-analysis-hub');if(analysis&&!document.getElementById('page-insights')){analysis.querySelector('.p2c-hub-grid')?.insertAdjacentHTML('beforeend','<button class="p2c-hub-card" onclick="p2cGo(\'insights\')"><div class="p2c-hub-icon">◈</div><div class="p2c-hub-title">インサイト</div><div class="p2c-hub-sub">タグ・前月比較・レビュー</div></button>');analysis.insertAdjacentHTML('afterend','<div id="page-insights" class="page"><div id="v3InsightsBody"></div></div>');p2cPages.insights='page-insights'}v3RenderCategoryManager();v3RenderTemplates();v3RenderTemplateStrip();v3RenderFutureFixed();v3RenderInsights()}
 // dashboard budget warnings + normal expense
 const _v3renderP2C=renderP2C;renderP2C=function(){_v3renderP2C();const tx=monthTx(),normal=v3RealExp(tx,true),special=v3RealExp(tx)-normal;const trend=document.getElementById('p2cTrend');if(trend)trend.textContent=`通常支出 ${fmt(normal)}${special?`・臨時 ${fmt(special)}`:''}`;const bd=loadBudget(viewYear,viewMonth),warns=Object.entries(bd.cats||{}).map(([cat,budget])=>{const used=tx.filter(t=>t.category===cat&&!v3IsSpecial(t)).reduce((s,t)=>s+v3ExpenseValue(t),0);return{cat,used,budget:Number(budget),pct:budget?Math.round(used/budget*100):0}}).filter(x=>x.pct>=80).sort((a,b)=>b.pct-a.pct);const actions=document.getElementById('p2cActions');if(actions&&warns.length&&!actions.querySelector('.v3-budget-warning')){actions.insertAdjacentHTML('afterbegin',warns.slice(0,3).map(x=>`<div class="p2c-action v3-budget-warning" onclick="p2cGo('budget')"><div class="p2c-ai">!</div><div class="p2c-am"><div class="p2c-at">${v3Esc(catLabel(x.cat))} ${x.pct>=100?'予算超過':x.pct+'%'}</div><div class="p2c-as">${fmt(x.used)} / ${fmt(x.budget)}</div></div><span>›</span></div>`).join(''))}}
 const _v3p2cGo=p2cGo;p2cGo=function(n){_v3p2cGo(n);if(n==='insights')v3RenderInsights()};
@@ -111,8 +105,6 @@ setTimeout(()=>{v3InstallUI();v3RefreshCategoryUI();renderHistory();renderP2C()}
 
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
   
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -143,7 +135,6 @@ body{font-family:'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif;backgroun
 .hdr-chip-val.sav{color:rgba(255,255,255,.65)}
 .hdr-chip-sub{font-size:8px;color:var(--hdr-muted);margin-top:2px;letter-spacing:.3px;font-weight:400;line-height:1.2}
 #syncStatus{text-align:right;font-size:10px;color:var(--text3);padding:5px 18px 2px;min-height:18px}
-#swUpdateBanner{background:#3A7FCC;color:#fff;padding:10px 18px;font-size:13px;align-items:center;justify-content:space-between;gap:10px}
 .tabs{display:flex;padding:0 14px;gap:3px;margin-bottom:1rem;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex-shrink:0;padding:6px 10px;font-size:11px;text-align:center;cursor:pointer;color:var(--text3);border-radius:8px;border:1px solid transparent;white-space:nowrap;transition:all .15s;position:relative}
@@ -413,11 +404,7 @@ body.p2c-sheet-open .p2c-safe{visibility:hidden}body.p2c-sheet-open #fixedRemind
       <div class="hdr-chip"><div class="hdr-chip-label">貯蓄率</div><div class="hdr-chip-val sav" id="savingsRate">-</div></div>
     </div>
   </div>
-  <div id="swUpdateBanner" style="display:none">
-    <span>🔄 新しいバージョンがあります</span>
-    <button onclick="applyUpdate()" style="background:#fff;color:#3A7FCC;border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">更新</button>
-  </div>
-  <div id="syncStatus"></div>
+<div id="syncStatus"></div>
   <div class="tabs no-print">
     <div class="tab active" onclick="switchTab('home')">&#9999;&#65039; 入力</div>
     <div class="tab" onclick="switchTab('history')">&#128203; 一覧</div>
@@ -665,7 +652,7 @@ body.p2c-sheet-open .p2c-safe{visibility:hidden}body.p2c-sheet-open #fixedRemind
   <div id="page-split" class="page">
     <div id="splitResult"></div>
     <div class="card"><div class="section-title">今月の割り勘明細</div><div id="splitList"><div class="empty">割り勘の記録がありません</div></div></div>
-       <button class="btn no-print" style="background:#F0F4FB;color:var(--blue);border-color:var(--blue)" onclick="openReport()">&#128424;&#65039; 精算書を作成・PDF保存</button>
+       <button class="btn no-print" style="background:#F0F4FB;color:var(--blue);border-color:var(--blue)" onclick="openReport()">&#128424;&#65039; 精算書を作成（PDF）</button>
   </div>
   <div id="page-budget" class="page">
     <div class="metric-grid" id="budgetSummary" style="padding:0 0 .75rem"></div>
@@ -928,7 +915,7 @@ body.p2c-sheet-open .p2c-safe{visibility:hidden}body.p2c-sheet-open #fixedRemind
 <div id="reportOverlay">
   <div class="rep-actions no-print">
   <button class="btn" onclick="closeReport()" style="flex:1">閉じる</button>
-  <button class="btn primary" id="splitPdfSaveBtn" onclick="saveSplitPdfToFiles()" style="flex:2;margin-top:0" disabled>PDF準備中...</button>
+  <button class="btn primary" onclick="window.print()" style="flex:2;margin-top:0">🖨️ 印刷 / PDF保存</button>
   </div>
   <div id="reportBody"></div>
 </div>
@@ -1707,7 +1694,6 @@ function renderSplit(){
 }
 
 function openReport(){
-  revokeSplitPdf();
   const tx=monthTx();
   const splitTx=tx.filter(t=>t.isSplit&&t.type==='expense');
   const adjTx=tx.filter(t=>t.isAdj||t.type==='adjustment');
@@ -1766,44 +1752,8 @@ function openReport(){
     </div>`;
   document.getElementById('reportOverlay').style.display='block';
   window.scrollTo(0,0);
-  requestAnimationFrame(()=>setTimeout(prepareSplitPdf,60));
 }
-let splitPdfBlob=null,splitPdfUrl='',splitPdfPreparing=false;
-function splitPdfFilename(){return 'kakeibo_精算書_'+viewYear+'-'+String(viewMonth+1).padStart(2,'0')+'.pdf';}
-function setSplitPdfStatus(text,disabled=true){const b=document.getElementById('splitPdfSaveBtn');if(b){b.textContent=text;b.disabled=disabled;b.style.opacity=disabled?'.55':'1';}}
-function revokeSplitPdf(){if(splitPdfUrl){URL.revokeObjectURL(splitPdfUrl);splitPdfUrl='';}splitPdfBlob=null;}
-async function prepareSplitPdf(){
-  if(splitPdfPreparing)return;splitPdfPreparing=true;revokeSplitPdf();setSplitPdfStatus('PDF準備中...',true);
-  try{
-    if(typeof html2canvas!=='function'||!window.jspdf?.jsPDF)throw new Error('PDFライブラリを読み込めませんでした');
-    if(document.fonts?.ready)await document.fonts.ready;
-    const report=document.querySelector('#reportBody .report');if(!report)throw new Error('精算書がありません');
-    const canvas=await html2canvas(report,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false,windowWidth:report.scrollWidth,windowHeight:report.scrollHeight});
-    const {jsPDF}=window.jspdf,pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
-    const pageW=210,pageH=297,margin=8,drawW=pageW-margin*2,usableH=pageH-margin*2;
-    const pxPerMm=canvas.width/drawW,pagePx=Math.floor(usableH*pxPerMm);let sy=0,page=0;
-    while(sy<canvas.height){
-      const sliceH=Math.min(pagePx,canvas.height-sy),part=document.createElement('canvas');part.width=canvas.width;part.height=sliceH;part.getContext('2d').drawImage(canvas,0,sy,canvas.width,sliceH,0,0,canvas.width,sliceH);
-      if(page++)pdf.addPage();pdf.addImage(part.toDataURL('image/jpeg',0.92),'JPEG',margin,margin,drawW,sliceH/pxPerMm,undefined,'FAST');sy+=sliceH;
-    }
-    splitPdfBlob=pdf.output('blob');splitPdfUrl=URL.createObjectURL(splitPdfBlob);setSplitPdfStatus('PDFをファイルに保存',false);
-  }catch(e){console.error(e);setSplitPdfStatus('PDF準備を再試行',false);p2cShowBanner('PDFの準備に失敗しました。通信を確認して再試行してください',{warning:true});}
-  finally{splitPdfPreparing=false;}
-}
-async function saveSplitPdfToFiles(){
-  if(!splitPdfBlob){await prepareSplitPdf();if(!splitPdfBlob)return;}
-  const name=splitPdfFilename(),file=new File([splitPdfBlob],name,{type:'application/pdf'});
-  try{
-    if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){await navigator.share({files:[file],title:name});return;}
-  }catch(e){if(e?.name==='AbortError')return;console.warn('share failed',e);}
-  // iOS/Safari fallback: open the real PDF so the native share button can save it to Files.
-  const win=window.open(splitPdfUrl,'_blank');
-  if(!win){const a=document.createElement('a');a.href=splitPdfUrl;a.target='_blank';a.rel='noopener';a.download=name;document.body.appendChild(a);a.click();a.remove();}
-  p2cShowBanner('PDFを開きました。共有ボタンから「ファイルに保存」を選択してください',{action:'閉じる'});
-}
-async function retrySplitPdf(){await prepareSplitPdf();}
-function closeReport(){document.getElementById('reportOverlay').style.display='none';revokeSplitPdf();}
-
+function closeReport(){document.getElementById('reportOverlay').style.display='none';}
   
 function openEdit(id){
   const t=transactions.find(x=>x.id===id);if(!t) return;
@@ -2202,36 +2152,20 @@ window.addEventListener('offline',()=>{
   if(!IS_TEST) showSyncStatus('📴 オフライン中（復帰時に自動同期）','var(--text2)');
 });
 
-/* ===== Service Worker 登録 & 更新検知 ===== */
-let swRegistration=null;
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./sw.js').then(reg=>{
-      swRegistration=reg;
-      reg.addEventListener('updatefound',()=>{
-        const newWorker=reg.installing;
-        newWorker.addEventListener('statechange',()=>{
-          if(newWorker.state==='installed' && navigator.serviceWorker.controller){
-            document.getElementById('swUpdateBanner').style.display='flex';
-          }
-        });
-      });
-    }).catch(e=>console.log('SW登録スキップ',e));
-    let refreshing=false;
-    navigator.serviceWorker.addEventListener('controllerchange',()=>{
-      if(refreshing) return;
-      refreshing=true;
-      window.location.reload();
-    });
-  });
-}
-function applyUpdate(){
-  if(swRegistration && swRegistration.waiting){
-    swRegistration.waiting.postMessage({type:'SKIP_WAITING'});
-  }
-}
-
-
+/* ===== Service Worker完全撤去 v3.0.7 ===== */
+(async function removeLegacyServiceWorkerAndCaches(){
+  try{
+    if('serviceWorker' in navigator){
+      const registrations=await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map(registration=>registration.unregister()));
+    }
+    if('caches' in window){
+      const names=await caches.keys();
+      await Promise.all(names.map(name=>caches.delete(name)));
+    }
+    console.info('Service Worker and Cache Storage removed.');
+  }catch(error){console.warn('Service Worker cleanup failed.',error);}
+})();
 let p2cActive='dashboard',p2cReturn={page:'dashboard',y:0};const p2cPages={dashboard:'page-dashboard',history:'page-history',analysis:'page-analysis-hub',more:'page-more-hub',chart:'page-chart',budget:'page-budget',annual:'page-annual',split:'page-split',fixed:'page-fixed',settings:'page-settings'};
 function p2cShow(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id)?.classList.add('active')}
 function p2cNav(n){document.querySelectorAll('.p2c-nb').forEach(x=>x.classList.toggle('active',x.dataset.p2c===n))}
