@@ -8,15 +8,17 @@ Kakeibo delivery requirements (must be retained)
 - Do not require separate source files from the user.
 
 Kakeibo
-Version  : v3.0.7
-Codename : No Service Worker
+Version  : v3.0.8
+Codename : iPhone PDF Save Direct
 Updated  : 2026-09-29
 Author   : 秋山伊織 + Microsoft Copilot
 
 Change Log
-- Service Worker registration removed.
-- Existing Service Workers are automatically unregistered and Cache Storage is cleared.
-- localStorage data remains unchanged.
+- Replaced the non-working print button with iPhone PDF file sharing.
+- PDF is prepared while the report preview is open, then shared from a direct user tap.
+- Every button action now shows preparing, ready, sharing, cancelled, or error status.
+- Service Worker registration, manifest, update banner, and PWA cache dependencies removed.
+- Existing Service Workers and Cache Storage are removed without deleting localStorage data.
 - Added previous-month budget, actual, variance, and three-month average.
 - Added per-category actual adoption and bulk copy from previous budget or actual.
 - Actual copy rounds up to the nearest 1,000 yen.
@@ -32,7 +34,7 @@ Change Log
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>kakeibo v3.0.7</title>
+<title>kakeibo v3.0.8</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -93,7 +95,7 @@ const _v3openFixedForm=openFixedForm;openFixedForm=function(idx=null){_v3openFix
 // Cloud payload extensions
 const _v3cloudPush=cloudPush;cloudPush=async function(){localStorage.setItem(SP+'kakeibo_v3_meta',JSON.stringify({categories:v3Categories,templates:v3LoadTemplates(),specialTags:v3GetSpecialTags()}));return _v3cloudPush()};
 // UI installation
-function v3InstallUI(){const settings=document.getElementById('page-settings');if(settings&&!document.getElementById('v3CategoryCard')){settings.insertAdjacentHTML('afterbegin',v3CategorySection()+v3TemplateSection()+v3SpecialSection());settings.insertAdjacentHTML('beforeend',`<div class="v3-version">Kakeibo v3.0.7 No Service Worker・2026-10-08</div>`)}const tags=document.getElementById('v3SpecialTags');if(tags)tags.value=v3GetSpecialTags().join(' ');const cycle=document.getElementById('fixedCycle');if(cycle&&!cycle.querySelector('[value="multiYear"]'))cycle.insertAdjacentHTML('beforeend','<option value="multiYear">複数年ごと</option>');const payWrap=document.getElementById('fixedPayMonthWrap');if(payWrap&&!document.getElementById('v3EveryYearsWrap'))payWrap.insertAdjacentHTML('beforebegin','<div id="v3EveryYearsWrap" style="display:none"><label>何年ごと</label><input id="v3EveryYears" type="number" min="2" max="20" value="2" inputmode="numeric"></div>');const fixedPage=document.getElementById('page-fixed');if(fixedPage&&!document.getElementById('v3FutureFixed'))fixedPage.insertAdjacentHTML('afterbegin','<div class="card"><div class="section-title">将来の固定費予定</div><div id="v3FutureFixed"></div></div>');const analysis=document.getElementById('page-analysis-hub');if(analysis&&!document.getElementById('page-insights')){analysis.querySelector('.p2c-hub-grid')?.insertAdjacentHTML('beforeend','<button class="p2c-hub-card" onclick="p2cGo(\'insights\')"><div class="p2c-hub-icon">◈</div><div class="p2c-hub-title">インサイト</div><div class="p2c-hub-sub">タグ・前月比較・レビュー</div></button>');analysis.insertAdjacentHTML('afterend','<div id="page-insights" class="page"><div id="v3InsightsBody"></div></div>');p2cPages.insights='page-insights'}v3RenderCategoryManager();v3RenderTemplates();v3RenderTemplateStrip();v3RenderFutureFixed();v3RenderInsights()}
+function v3InstallUI(){const settings=document.getElementById('page-settings');if(settings&&!document.getElementById('v3CategoryCard')){settings.insertAdjacentHTML('afterbegin',v3CategorySection()+v3TemplateSection()+v3SpecialSection());settings.insertAdjacentHTML('beforeend',`<div class="v3-version">Kakeibo v3.0.8 iPhone PDF Save Direct・2026-10-08</div>`)}const tags=document.getElementById('v3SpecialTags');if(tags)tags.value=v3GetSpecialTags().join(' ');const cycle=document.getElementById('fixedCycle');if(cycle&&!cycle.querySelector('[value="multiYear"]'))cycle.insertAdjacentHTML('beforeend','<option value="multiYear">複数年ごと</option>');const payWrap=document.getElementById('fixedPayMonthWrap');if(payWrap&&!document.getElementById('v3EveryYearsWrap'))payWrap.insertAdjacentHTML('beforebegin','<div id="v3EveryYearsWrap" style="display:none"><label>何年ごと</label><input id="v3EveryYears" type="number" min="2" max="20" value="2" inputmode="numeric"></div>');const fixedPage=document.getElementById('page-fixed');if(fixedPage&&!document.getElementById('v3FutureFixed'))fixedPage.insertAdjacentHTML('afterbegin','<div class="card"><div class="section-title">将来の固定費予定</div><div id="v3FutureFixed"></div></div>');const analysis=document.getElementById('page-analysis-hub');if(analysis&&!document.getElementById('page-insights')){analysis.querySelector('.p2c-hub-grid')?.insertAdjacentHTML('beforeend','<button class="p2c-hub-card" onclick="p2cGo(\'insights\')"><div class="p2c-hub-icon">◈</div><div class="p2c-hub-title">インサイト</div><div class="p2c-hub-sub">タグ・前月比較・レビュー</div></button>');analysis.insertAdjacentHTML('afterend','<div id="page-insights" class="page"><div id="v3InsightsBody"></div></div>');p2cPages.insights='page-insights'}v3RenderCategoryManager();v3RenderTemplates();v3RenderTemplateStrip();v3RenderFutureFixed();v3RenderInsights()}
 // dashboard budget warnings + normal expense
 const _v3renderP2C=renderP2C;renderP2C=function(){_v3renderP2C();const tx=monthTx(),normal=v3RealExp(tx,true),special=v3RealExp(tx)-normal;const trend=document.getElementById('p2cTrend');if(trend)trend.textContent=`通常支出 ${fmt(normal)}${special?`・臨時 ${fmt(special)}`:''}`;const bd=loadBudget(viewYear,viewMonth),warns=Object.entries(bd.cats||{}).map(([cat,budget])=>{const used=tx.filter(t=>t.category===cat&&!v3IsSpecial(t)).reduce((s,t)=>s+v3ExpenseValue(t),0);return{cat,used,budget:Number(budget),pct:budget?Math.round(used/budget*100):0}}).filter(x=>x.pct>=80).sort((a,b)=>b.pct-a.pct);const actions=document.getElementById('p2cActions');if(actions&&warns.length&&!actions.querySelector('.v3-budget-warning')){actions.insertAdjacentHTML('afterbegin',warns.slice(0,3).map(x=>`<div class="p2c-action v3-budget-warning" onclick="p2cGo('budget')"><div class="p2c-ai">!</div><div class="p2c-am"><div class="p2c-at">${v3Esc(catLabel(x.cat))} ${x.pct>=100?'予算超過':x.pct+'%'}</div><div class="p2c-as">${fmt(x.used)} / ${fmt(x.budget)}</div></div><span>›</span></div>`).join(''))}}
 const _v3p2cGo=p2cGo;p2cGo=function(n){_v3p2cGo(n);if(n==='insights')v3RenderInsights()};
@@ -105,6 +107,8 @@ setTimeout(()=>{v3InstallUI();v3RefreshCategoryUI();renderHistory();renderP2C()}
 
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
   
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -652,7 +656,7 @@ body.p2c-sheet-open .p2c-safe{visibility:hidden}body.p2c-sheet-open #fixedRemind
   <div id="page-split" class="page">
     <div id="splitResult"></div>
     <div class="card"><div class="section-title">今月の割り勘明細</div><div id="splitList"><div class="empty">割り勘の記録がありません</div></div></div>
-       <button class="btn no-print" style="background:#F0F4FB;color:var(--blue);border-color:var(--blue)" onclick="openReport()">&#128424;&#65039; 精算書を作成（PDF）</button>
+       <button class="btn no-print" style="background:#F0F4FB;color:var(--blue);border-color:var(--blue)" onclick="openReport()">&#128424;&#65039; 精算書を作成・PDF保存</button>
   </div>
   <div id="page-budget" class="page">
     <div class="metric-grid" id="budgetSummary" style="padding:0 0 .75rem"></div>
@@ -913,9 +917,10 @@ body.p2c-sheet-open .p2c-safe{visibility:hidden}body.p2c-sheet-open #fixedRemind
 </div>
 
 <div id="reportOverlay">
-  <div class="rep-actions no-print">
+  <div class="rep-actions no-print" style="flex-wrap:wrap">
   <button class="btn" onclick="closeReport()" style="flex:1">閉じる</button>
-  <button class="btn primary" onclick="window.print()" style="flex:2;margin-top:0">🖨️ 印刷 / PDF保存</button>
+  <button class="btn primary" id="splitPdfSaveBtn" onclick="saveSplitPdfToFiles()" style="flex:2;margin-top:0" disabled>PDF準備中...</button>
+  <div id="splitPdfStatus" style="flex-basis:100%;font-size:12px;color:#555;background:#fff;border-radius:8px;padding:8px 10px;text-align:center">精算書PDFを準備しています</div>
   </div>
   <div id="reportBody"></div>
 </div>
@@ -1694,6 +1699,7 @@ function renderSplit(){
 }
 
 function openReport(){
+  clearSplitPdf();
   const tx=monthTx();
   const splitTx=tx.filter(t=>t.isSplit&&t.type==='expense');
   const adjTx=tx.filter(t=>t.isAdj||t.type==='adjustment');
@@ -1752,8 +1758,38 @@ function openReport(){
     </div>`;
   document.getElementById('reportOverlay').style.display='block';
   window.scrollTo(0,0);
+  requestAnimationFrame(()=>setTimeout(prepareSplitPdf,100));
 }
-function closeReport(){document.getElementById('reportOverlay').style.display='none';}
+let splitPdfBlob=null,splitPdfUrl='',splitPdfBusy=false;
+function splitPdfFilename(){return 'kakeibo_精算書_'+viewYear+'-'+String(viewMonth+1).padStart(2,'0')+'.pdf'}
+function splitPdfUi(message,ready=false){const b=document.getElementById('splitPdfSaveBtn'),st=document.getElementById('splitPdfStatus');if(b){b.disabled=!ready;b.textContent=ready?'PDFをファイルに保存':'PDF準備中...';b.style.opacity=ready?'1':'.55'}if(st)st.textContent=message}
+function clearSplitPdf(){if(splitPdfUrl)URL.revokeObjectURL(splitPdfUrl);splitPdfUrl='';splitPdfBlob=null}
+async function prepareSplitPdf(){
+ if(splitPdfBusy)return;splitPdfBusy=true;clearSplitPdf();splitPdfUi('精算書PDFを準備しています',false);
+ try{
+  if(typeof html2canvas!=='function')throw new Error('html2canvasの読み込みに失敗');
+  if(!window.jspdf||!window.jspdf.jsPDF)throw new Error('jsPDFの読み込みに失敗');
+  if(document.fonts&&document.fonts.ready)await document.fonts.ready;
+  const report=document.querySelector('#reportBody .report');if(!report)throw new Error('精算書本体がありません');
+  const canvas=await html2canvas(report,{scale:1.7,useCORS:true,backgroundColor:'#fff',logging:false});
+  const jsPDF=window.jspdf.jsPDF,pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+  const margin=8,drawW=194,usableH=281,pxPerMm=canvas.width/drawW,pagePx=Math.floor(usableH*pxPerMm);let sy=0,page=0;
+  while(sy<canvas.height){const h=Math.min(pagePx,canvas.height-sy),part=document.createElement('canvas');part.width=canvas.width;part.height=h;part.getContext('2d').drawImage(canvas,0,sy,canvas.width,h,0,0,canvas.width,h);if(page++)pdf.addPage();pdf.addImage(part.toDataURL('image/jpeg',.9),'JPEG',margin,margin,drawW,h/pxPerMm,undefined,'FAST');sy+=h}
+  splitPdfBlob=pdf.output('blob');splitPdfUrl=URL.createObjectURL(splitPdfBlob);splitPdfUi('準備完了。下のボタンを押して「ファイルに保存」を選んでください',true);
+ }catch(e){console.error('split PDF error',e);const b=document.getElementById('splitPdfSaveBtn');if(b){b.disabled=false;b.textContent='PDF準備を再試行';b.style.opacity='1'}const st=document.getElementById('splitPdfStatus');if(st)st.textContent='PDF準備失敗: '+(e.message||e);}
+ finally{splitPdfBusy=false}
+}
+async function saveSplitPdfToFiles(){
+ const st=document.getElementById('splitPdfStatus');
+ if(!splitPdfBlob){if(st)st.textContent='PDFを再準備します';await prepareSplitPdf();return}
+ const filename=splitPdfFilename(),file=new File([splitPdfBlob],filename,{type:'application/pdf'});
+ try{
+  if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){if(st)st.textContent='共有画面を開いています';await navigator.share({files:[file],title:filename});if(st)st.textContent='共有画面を閉じました';return}
+  if(st)st.textContent='PDFをSafariで開きます。共有ボタンから「ファイルに保存」を選んでください';
+  const a=document.createElement('a');a.href=splitPdfUrl;a.target='_blank';a.rel='noopener';a.download=filename;document.body.appendChild(a);a.click();a.remove();
+ }catch(e){if(e&&e.name==='AbortError'){if(st)st.textContent='保存をキャンセルしました';return}console.error('share PDF error',e);if(st)st.textContent='保存失敗: '+(e.message||e)}
+}
+function closeReport(){document.getElementById('reportOverlay').style.display='none';clearSplitPdf()}
   
 function openEdit(id){
   const t=transactions.find(x=>x.id===id);if(!t) return;
@@ -2152,20 +2188,8 @@ window.addEventListener('offline',()=>{
   if(!IS_TEST) showSyncStatus('📴 オフライン中（復帰時に自動同期）','var(--text2)');
 });
 
-/* ===== Service Worker完全撤去 v3.0.7 ===== */
-(async function removeLegacyServiceWorkerAndCaches(){
-  try{
-    if('serviceWorker' in navigator){
-      const registrations=await navigator.serviceWorker.getRegistrations();
-      await Promise.all(registrations.map(registration=>registration.unregister()));
-    }
-    if('caches' in window){
-      const names=await caches.keys();
-      await Promise.all(names.map(name=>caches.delete(name)));
-    }
-    console.info('Service Worker and Cache Storage removed.');
-  }catch(error){console.warn('Service Worker cleanup failed.',error);}
-})();
+/* ===== Service Worker完全撤去 v3.0.8 ===== */
+(async()=>{try{if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()))}if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}}catch(e){console.warn('legacy cache cleanup failed',e)}})();
 let p2cActive='dashboard',p2cReturn={page:'dashboard',y:0};const p2cPages={dashboard:'page-dashboard',history:'page-history',analysis:'page-analysis-hub',more:'page-more-hub',chart:'page-chart',budget:'page-budget',annual:'page-annual',split:'page-split',fixed:'page-fixed',settings:'page-settings'};
 function p2cShow(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id)?.classList.add('active')}
 function p2cNav(n){document.querySelectorAll('.p2c-nb').forEach(x=>x.classList.toggle('active',x.dataset.p2c===n))}
