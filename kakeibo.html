@@ -8,14 +8,15 @@ Kakeibo delivery requirements (must be retained)
 - Do not require separate source files from the user.
 
 Kakeibo
-Version  : v3.0.5
-Codename : Split Report Print Fix
-Updated  : 2026-10-08
+Version  : v3.0.6
+Codename : iPhone PDF File Save
+Updated  : 2026-09-29
 Author   : 秋山伊織 + Microsoft Copilot
 
 Change Log
-- Fixed split report Print / PDF button and print-layout visibility.
-- Added print lifecycle cleanup for browser and mobile environments.
+- Replaced printing with direct PDF generation for iPhone Safari.
+- Added iOS share sheet support so PDF can be saved to the Files app.
+- Added PDF preview fallback when file sharing is unavailable.
 - Added previous-month budget, actual, variance, and three-month average.
 - Added per-category actual adoption and bulk copy from previous budget or actual.
 - Actual copy rounds up to the nearest 1,000 yen.
@@ -31,7 +32,7 @@ Change Log
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>kakeibo v3.0.5</title>
+<title>kakeibo v3.0.6</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -110,6 +111,8 @@ setTimeout(()=>{v3InstallUI();v3RefreshCategoryUI();renderHistory();renderP2C()}
 
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
   
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -316,17 +319,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#888;backgroun
 .rep-sum-row.total .val{font-size:20px}
 .rep-foot{margin-top:24px;padding-top:12px;border-top:1px solid var(--border);text-align:center;font-size:11px;color:var(--text3)}
 .rep-actions{max-width:640px;margin:0 auto 16px;display:flex;gap:8px}
-@page{size:A4 portrait;margin:10mm}
-body.report-printing{overflow:visible!important}
-@media print{
-  html,body{height:auto!important;min-height:0!important;overflow:visible!important;background:#fff!important}
-  body.report-printing>*{display:none!important}
-  body.report-printing>#reportOverlay{display:block!important;position:static!important;inset:auto!important;width:100%!important;height:auto!important;overflow:visible!important;padding:0!important;background:#fff!important}
-  body.report-printing #reportBody{display:block!important}
-  body.report-printing .report{display:block!important;width:100%!important;max-width:none!important;box-shadow:none!important;border-radius:0!important;margin:0!important;padding:0!important}
-  body.report-printing .rep-actions{display:none!important}
-  body.report-printing .rep-tbl tr,body.report-printing .rep-summary{break-inside:avoid;page-break-inside:avoid}
-}
 @media print{
   #reportOverlay{position:static;background:#fff;padding:0;overflow:visible}
   .report{box-shadow:none;border-radius:0;max-width:100%;margin:0;padding:16px}
@@ -673,7 +665,7 @@ body.p2c-sheet-open .p2c-safe{visibility:hidden}body.p2c-sheet-open #fixedRemind
   <div id="page-split" class="page">
     <div id="splitResult"></div>
     <div class="card"><div class="section-title">今月の割り勘明細</div><div id="splitList"><div class="empty">割り勘の記録がありません</div></div></div>
-       <button class="btn no-print" style="background:#F0F4FB;color:var(--blue);border-color:var(--blue)" onclick="openReport()">&#128424;&#65039; 精算書を作成（PDF）</button>
+       <button class="btn no-print" style="background:#F0F4FB;color:var(--blue);border-color:var(--blue)" onclick="openReport()">&#128424;&#65039; 精算書を作成・PDF保存</button>
   </div>
   <div id="page-budget" class="page">
     <div class="metric-grid" id="budgetSummary" style="padding:0 0 .75rem"></div>
@@ -936,7 +928,7 @@ body.p2c-sheet-open .p2c-safe{visibility:hidden}body.p2c-sheet-open #fixedRemind
 <div id="reportOverlay">
   <div class="rep-actions no-print">
   <button class="btn" onclick="closeReport()" style="flex:1">閉じる</button>
-  <button class="btn primary" onclick="printSplitReport()" style="flex:2;margin-top:0">🖨️ 印刷 / PDF保存</button>
+  <button class="btn primary" id="splitPdfSaveBtn" onclick="saveSplitPdfToFiles()" style="flex:2;margin-top:0" disabled>PDF準備中...</button>
   </div>
   <div id="reportBody"></div>
 </div>
@@ -1715,7 +1707,7 @@ function renderSplit(){
 }
 
 function openReport(){
-  cleanupSplitPrint();
+  revokeSplitPdf();
   const tx=monthTx();
   const splitTx=tx.filter(t=>t.isSplit&&t.type==='expense');
   const adjTx=tx.filter(t=>t.isAdj||t.type==='adjustment');
@@ -1774,22 +1766,44 @@ function openReport(){
     </div>`;
   document.getElementById('reportOverlay').style.display='block';
   window.scrollTo(0,0);
+  requestAnimationFrame(()=>setTimeout(prepareSplitPdf,60));
 }
-let splitPrintPending=false;
-function cleanupSplitPrint(){document.body.classList.remove('report-printing');splitPrintPending=false;}
-function printSplitReport(){
-  const overlay=document.getElementById('reportOverlay'),body=document.getElementById('reportBody');
-  if(!overlay||!body||!body.innerHTML.trim()){alert('先に精算書を作成してください');return;}
-  if(splitPrintPending)return;
-  splitPrintPending=true;
-  document.body.classList.add('report-printing');
-  overlay.style.display='block';
-  const run=()=>{try{window.focus();window.print();}catch(e){cleanupSplitPrint();alert('印刷画面を開けませんでした。ブラウザの共有メニューから「プリント」を選択してください。')}};
-  requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(run,80)));
+let splitPdfBlob=null,splitPdfUrl='',splitPdfPreparing=false;
+function splitPdfFilename(){return 'kakeibo_精算書_'+viewYear+'-'+String(viewMonth+1).padStart(2,'0')+'.pdf';}
+function setSplitPdfStatus(text,disabled=true){const b=document.getElementById('splitPdfSaveBtn');if(b){b.textContent=text;b.disabled=disabled;b.style.opacity=disabled?'.55':'1';}}
+function revokeSplitPdf(){if(splitPdfUrl){URL.revokeObjectURL(splitPdfUrl);splitPdfUrl='';}splitPdfBlob=null;}
+async function prepareSplitPdf(){
+  if(splitPdfPreparing)return;splitPdfPreparing=true;revokeSplitPdf();setSplitPdfStatus('PDF準備中...',true);
+  try{
+    if(typeof html2canvas!=='function'||!window.jspdf?.jsPDF)throw new Error('PDFライブラリを読み込めませんでした');
+    if(document.fonts?.ready)await document.fonts.ready;
+    const report=document.querySelector('#reportBody .report');if(!report)throw new Error('精算書がありません');
+    const canvas=await html2canvas(report,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false,windowWidth:report.scrollWidth,windowHeight:report.scrollHeight});
+    const {jsPDF}=window.jspdf,pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+    const pageW=210,pageH=297,margin=8,drawW=pageW-margin*2,usableH=pageH-margin*2;
+    const pxPerMm=canvas.width/drawW,pagePx=Math.floor(usableH*pxPerMm);let sy=0,page=0;
+    while(sy<canvas.height){
+      const sliceH=Math.min(pagePx,canvas.height-sy),part=document.createElement('canvas');part.width=canvas.width;part.height=sliceH;part.getContext('2d').drawImage(canvas,0,sy,canvas.width,sliceH,0,0,canvas.width,sliceH);
+      if(page++)pdf.addPage();pdf.addImage(part.toDataURL('image/jpeg',0.92),'JPEG',margin,margin,drawW,sliceH/pxPerMm,undefined,'FAST');sy+=sliceH;
+    }
+    splitPdfBlob=pdf.output('blob');splitPdfUrl=URL.createObjectURL(splitPdfBlob);setSplitPdfStatus('PDFをファイルに保存',false);
+  }catch(e){console.error(e);setSplitPdfStatus('PDF準備を再試行',false);p2cShowBanner('PDFの準備に失敗しました。通信を確認して再試行してください',{warning:true});}
+  finally{splitPdfPreparing=false;}
 }
-function closeReport(){cleanupSplitPrint();document.getElementById('reportOverlay').style.display='none';}
-window.addEventListener('afterprint',cleanupSplitPrint);
-window.addEventListener('focus',()=>{if(splitPrintPending)setTimeout(cleanupSplitPrint,700)});
+async function saveSplitPdfToFiles(){
+  if(!splitPdfBlob){await prepareSplitPdf();if(!splitPdfBlob)return;}
+  const name=splitPdfFilename(),file=new File([splitPdfBlob],name,{type:'application/pdf'});
+  try{
+    if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){await navigator.share({files:[file],title:name});return;}
+  }catch(e){if(e?.name==='AbortError')return;console.warn('share failed',e);}
+  // iOS/Safari fallback: open the real PDF so the native share button can save it to Files.
+  const win=window.open(splitPdfUrl,'_blank');
+  if(!win){const a=document.createElement('a');a.href=splitPdfUrl;a.target='_blank';a.rel='noopener';a.download=name;document.body.appendChild(a);a.click();a.remove();}
+  p2cShowBanner('PDFを開きました。共有ボタンから「ファイルに保存」を選択してください',{action:'閉じる'});
+}
+async function retrySplitPdf(){await prepareSplitPdf();}
+function closeReport(){document.getElementById('reportOverlay').style.display='none';revokeSplitPdf();}
+
   
 function openEdit(id){
   const t=transactions.find(x=>x.id===id);if(!t) return;
